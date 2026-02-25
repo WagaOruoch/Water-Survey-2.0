@@ -13,7 +13,6 @@ export type BackgroundFieldId =
 export type StaffInterviewFieldId =
   | "consent"               // Do you agree to be interviewed?
   | "staff_role"            // What is your role?
-  | "staff_role_other"      // Specify other role (if staff_role == 'other')
   | "years_at_site"         // How many years have you worked here?
   | "months_at_site"        // How many months have you worked here? (0–11)
   | "other_staff_count"     // How many other people work here?

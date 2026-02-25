@@ -6,7 +6,7 @@ import FieldWrapper from "./FieldWrapper";
 interface ImageFieldProps {
   id: string;
   label: string;
-  value: string;       // stores the base64 image data once captured
+  value: string;       // stores the filename once captured
   onChange: (value: string) => void;
   required?: boolean;
 }
@@ -23,12 +23,7 @@ export default function ImageField({
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const base64 = event.target?.result as string;
-        onChange(base64);
-      };
-      reader.readAsDataURL(file);
+      onChange(file.name);
     }
   }
 
@@ -54,7 +49,7 @@ export default function ImageField({
         </label>
         {value && (
           <p className="rounded-md bg-blue-50 px-3 py-1.5 text-xs text-blue-700">
-            Photo: {value.slice(0, 50)}…
+            Captured: {value}
           </p>
         )}
       </div>
