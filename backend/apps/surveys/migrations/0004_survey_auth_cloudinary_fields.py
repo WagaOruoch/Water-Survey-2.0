@@ -13,11 +13,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name="surveyresponse",
-            name="staff_role_other",
-            field=models.CharField(blank=True, max_length=200, null=True),
-        ),
-        migrations.AddField(
-            model_name="surveyresponse",
             name="submitted_by",
             field=models.ForeignKey(
                 blank=True,

@@ -130,7 +130,7 @@ export default function SurveyCorpAuthGate() {
   if (!authReady) {
     return (
       <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-900">Survey Corp</h2>
+        <h2 className="text-xl font-semibold text-gray-900">Water Site Survey</h2>
         <p className="mt-2 text-sm text-gray-600">
           Sign in with Google to access the survey form.
         </p>
