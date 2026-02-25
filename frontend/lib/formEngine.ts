@@ -105,6 +105,9 @@ export function isFieldVisible(
     case "water_delivery_frequency":
       return flags.interview_allowed;
 
+    case "staff_role_other":
+      return values.staff_role === "other" && flags.interview_allowed;
+
     case "dry_months":
       // relevant: has_dry_season == 'yes'
       return values.has_dry_season === "yes";
@@ -172,7 +175,7 @@ export function clearHiddenFields(values: FormValues): FormValues {
     // Background
     "site_code", "site_name", "gps_location", "survey_date", "site_photo", "is_staffed",
     // Staff Interview
-    "consent", "staff_role", "years_at_site", "months_at_site", "other_staff_count",
+    "consent", "staff_role", "staff_role_other", "years_at_site", "months_at_site", "other_staff_count",
     "site_age", "has_dry_season", "dry_months",
     "water_delivery_method", "water_delivery_other", "knows_water_origin", "water_origin",
     "water_is_treated", "treatment_methods", "water_delivery_frequency",

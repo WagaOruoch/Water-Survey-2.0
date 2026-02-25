@@ -1,22 +1,31 @@
 import uuid
+from django.conf import settings
 from django.db import models
 
 
 class SurveyResponse(models.Model):
     id           = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     submitted_at = models.DateTimeField(auto_now_add=True)
+    submitted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="survey_responses",
+    )
 
     # ── Background ───────────────────────────────────────────
     site_code    = models.IntegerField(null=True, blank=True)
     site_name    = models.CharField(max_length=50,  null=True, blank=True)
     gps_location = models.CharField(max_length=100, null=True, blank=True)
     survey_date  = models.DateField(null=True, blank=True)
-    site_photo   = models.CharField(max_length=255, null=True, blank=True)
+    site_photo   = models.CharField(max_length=500, null=True, blank=True)
     is_staffed   = models.CharField(max_length=3,   null=True, blank=True)
 
     # ── Staff Interview ──────────────────────────────────────
     consent           = models.CharField(max_length=3,   null=True, blank=True)
     staff_role        = models.CharField(max_length=50,  null=True, blank=True)
+    staff_role_other  = models.CharField(max_length=200, null=True, blank=True)
     years_at_site     = models.IntegerField(null=True, blank=True)
     months_at_site    = models.IntegerField(null=True, blank=True)
     other_staff_count = models.IntegerField(null=True, blank=True)

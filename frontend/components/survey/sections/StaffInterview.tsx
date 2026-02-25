@@ -109,6 +109,15 @@ export default function StaffInterview({ values, flags, onChange }: Props) {
         />
       )}
 
+      {isFieldVisible("staff_role_other", values, flags) && (
+        <TextField
+          id="staff_role_other"
+          label="Please specify your role"
+          value={(values.staff_role_other as string) ?? ""}
+          onChange={(v) => onChange("staff_role_other", v)}
+        />
+      )}
+
       {isFieldVisible("years_at_site", values, flags) && (
         <IntegerField
           id="years_at_site"

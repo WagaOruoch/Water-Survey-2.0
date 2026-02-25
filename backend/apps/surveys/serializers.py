@@ -1,5 +1,11 @@
+from django.conf import settings
+import cloudinary.uploader
 from rest_framework import serializers
 from .models import SurveyResponse
+
+
+class GoogleAuthSerializer(serializers.Serializer):
+    id_token = serializers.CharField(required=True)
 
 # ──────────────────────────────────────────────────────────────
 # Multi-select option lists — must match XLSForm choices exactly
@@ -36,6 +42,11 @@ class SurveyResponseSerializer(serializers.ModelSerializer):
     """
 
     # Write-only array inputs for multi-select fields
+    site_photo        = serializers.CharField(
+        required=False, allow_blank=True, allow_null=True, write_only=True,
+    )
+    site_photo_url    = serializers.CharField(source="site_photo", read_only=True)
+    submitted_by_email = serializers.EmailField(source="submitted_by.email", read_only=True)
     dry_months         = serializers.ListField(
         child=serializers.CharField(), required=False, allow_null=True, write_only=True,
     )
@@ -50,10 +61,11 @@ class SurveyResponseSerializer(serializers.ModelSerializer):
         model  = SurveyResponse
         fields = [
             "id", "submitted_at",
+            "submitted_by_email",
             # Background
-            "site_code", "site_name", "gps_location", "survey_date", "site_photo", "is_staffed",
+            "site_code", "site_name", "gps_location", "survey_date", "site_photo", "site_photo_url", "is_staffed",
             # Staff Interview — scalar fields
-            "consent", "staff_role", "years_at_site", "months_at_site", "other_staff_count",
+            "consent", "staff_role", "staff_role_other", "years_at_site", "months_at_site", "other_staff_count",
             "site_age", "has_dry_season",
             # Dry months — write as array, read as booleans
             "dry_months",
@@ -85,6 +97,23 @@ class SurveyResponseSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "submitted_at"]
 
     def validate(self, attrs):
+        site_photo = attrs.get("site_photo")
+
+        if (
+            site_photo
+            and isinstance(site_photo, str)
+            and site_photo.startswith("data:image")
+            and not settings.CLOUDINARY_ENABLED
+        ):
+            raise serializers.ValidationError(
+                {
+                    "site_photo": (
+                        "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, "
+                        "CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET in backend .env."
+                    )
+                }
+            )
+
         missing = [f for f in REQUIRED_FIELDS if not attrs.get(f)]
         if missing:
             raise serializers.ValidationError(
@@ -93,9 +122,26 @@ class SurveyResponseSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
+        site_photo_data = validated_data.pop("site_photo", None)
         months     = validated_data.pop("dry_months",        None)
         treatments = validated_data.pop("treatment_methods", None)
         distances  = validated_data.pop("shore_distances",   None)
+
+        if site_photo_data and isinstance(site_photo_data, str):
+            if site_photo_data.startswith("data:image"):
+                try:
+                    upload_result = cloudinary.uploader.upload(
+                        site_photo_data,
+                        folder="water-survey/site-photos",
+                        resource_type="image",
+                    )
+                    validated_data["site_photo"] = (
+                        upload_result.get("secure_url") or upload_result.get("url")
+                    )
+                except Exception:
+                    validated_data["site_photo"] = None
+            elif site_photo_data.startswith("http://") or site_photo_data.startswith("https://"):
+                validated_data["site_photo"] = site_photo_data
 
         # Expand arrays → boolean columns
         # NULL  = question was hidden (field absent from payload)

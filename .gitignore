@@ -1,0 +1,26 @@
+# Environment / secrets
+.env
+*.env
+backend/.env
+frontend/.env
+
+# Python cache / compiled
+**/__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+.venv/
+backend/venv/
+
+# Node / Next
+**/node_modules/
+frontend/.next/
+
+# Uploaded/generated media
+backend/media/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/

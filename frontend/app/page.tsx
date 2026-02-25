@@ -1,4 +1,4 @@
-import SurveyForm from "@/components/survey/SurveyForm";
+import SurveyCorpAuthGate from "@/components/auth/SurveyCorpAuthGate";
 
 export default function Home() {
   return (
@@ -8,16 +8,14 @@ export default function Home() {
         {/* Page header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">
-            Water Site Survey
+            Survey Corp
           </h1>
           <p className="mt-1 text-sm text-gray-500">
-            Complete all visible fields. Sections and questions will appear
-            based on your responses.
+            Sign in with Google to access and submit your survey form.
           </p>
         </div>
 
-        {/* Survey form */}
-        <SurveyForm />
+        <SurveyCorpAuthGate />
 
       </div>
     </div>
