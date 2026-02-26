@@ -151,6 +151,48 @@ export interface SurveySubmitResponse {
   submitted_at: string;
 }
 
+export type SurveyResponseDetail = Record<string, unknown> & {
+  id: string;
+  submitted_at: string;
+};
+
+export interface SurveyResponsesQuery {
+  site_name?: string;
+  is_staffed?: "yes" | "no" | "";
+  water_source_type?: string;
+  submitted_after?: string;
+  submitted_before?: string;
+  period?: "" | "this_week" | "this_month";
+  ordering?: "submitted_at" | "-submitted_at" | "site_code" | "-site_code" | "site_name" | "-site_name";
+  page?: number;
+  page_size?: number;
+}
+
+export interface PaginatedSurveyResponses {
+  items: SurveyResponseDetail[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export interface DashboardSummaryResponse {
+  total_surveys: number;
+  surveys_this_month: number;
+  surveys_this_week: number;
+  staffing_rate: number;
+  top_water_source: string;
+  peak_survey_time: string;
+}
+
+export interface DashboardRecentActivityItem {
+  id: string;
+  site_code: number | null;
+  location: string | null;
+  submitted_at: string;
+  is_staffed: string | null;
+}
+
 export interface AuthUser {
   id: number;
   email: string;

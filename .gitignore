@@ -24,3 +24,6 @@ backend/media/
 .DS_Store
 Thumbs.db
 .vscode/
+
+water-survey-dashboard.html
+survey-corp-mock.html

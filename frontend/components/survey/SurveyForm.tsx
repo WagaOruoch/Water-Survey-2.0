@@ -27,6 +27,33 @@ const OBSERVATION_REQUIRED: { id: FieldId; label: string }[] = [
   { id: "water_source_type", label: "Type of site" },
 ];
 
+const DEPENDENT_CLEAR_MAP: Partial<Record<FieldId, FieldId[]>> = {
+  // Staff interview branches
+  staff_role: ["staff_role_other"],
+  has_dry_season: ["dry_months"],
+  water_delivery_method: [
+    "water_delivery_other",
+    "knows_water_origin",
+    "water_origin",
+    "water_is_treated",
+    "treatment_methods",
+  ],
+  knows_water_origin: ["water_origin", "water_is_treated", "treatment_methods"],
+  water_is_treated: ["treatment_methods"],
+
+  // Site observation branches
+  water_source_type: [
+    "piped_subtype",
+    "well_subtype",
+    "spring_subtype",
+    "packaged_subtype",
+    "other_source_subtype",
+    "surface_water_type",
+  ],
+  other_source_subtype: ["surface_water_type"],
+  used_for_drinking: ["water_access_method"],
+};
+
 type Status = "idle" | "loading" | "success" | "error";
 
 export default function SurveyForm() {
@@ -41,7 +68,16 @@ export default function SurveyForm() {
   function handleChange(fieldId: FieldId, value: FieldValue) {
     // Clear validation errors as the user corrects the form
     if (validationErrors.length > 0) setValidationErrors([]);
-    setValues((prev) => ({ ...prev, [fieldId]: value }));
+    setValues((prev) => {
+      const nextValues = { ...prev, [fieldId]: value };
+
+      const dependentFields = DEPENDENT_CLEAR_MAP[fieldId] ?? [];
+      for (const dependentField of dependentFields) {
+        delete nextValues[dependentField];
+      }
+
+      return clearHiddenFields(nextValues);
+    });
   }
 
   // ── Validation ───────────────────────────────────────────

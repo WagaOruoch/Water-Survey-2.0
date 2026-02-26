@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import SurveyForm from "@/components/survey/SurveyForm";
 import {
+  AUTH_EXPIRED_EVENT,
   clearAccessToken,
   getAccessToken,
   signInWithGoogle,
@@ -35,6 +36,7 @@ declare global {
 }
 
 type AuthStatus = "checking" | "signed_out" | "signed_in" | "error";
+const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000;
 
 export default function SurveyCorpAuthGate() {
   const [status, setStatus] = useState<AuthStatus>("checking");
@@ -56,6 +58,59 @@ export default function SurveyCorpAuthGate() {
     }
     setStatus("signed_out");
   }, []);
+
+  useEffect(() => {
+    const onAuthExpired = () => {
+      clearAccessToken();
+      setUser(null);
+      setStatus("signed_out");
+      setAuthError("Session expired. Please sign in again.");
+    };
+
+    window.addEventListener(AUTH_EXPIRED_EVENT, onAuthExpired);
+    return () => window.removeEventListener(AUTH_EXPIRED_EVENT, onAuthExpired);
+  }, []);
+
+  useEffect(() => {
+    if (status !== "signed_in") return;
+
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const signOutForInactivity = () => {
+      clearAccessToken();
+      setUser(null);
+      setStatus("signed_out");
+      setAuthError("You were logged out after 15 minutes of inactivity.");
+    };
+
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(signOutForInactivity, INACTIVITY_TIMEOUT_MS);
+    };
+
+    const activityEvents: Array<keyof WindowEventMap> = [
+      "mousemove",
+      "mousedown",
+      "keydown",
+      "scroll",
+      "touchstart",
+    ];
+
+    for (const eventName of activityEvents) {
+      window.addEventListener(eventName, resetTimer, { passive: true });
+    }
+
+    document.addEventListener("visibilitychange", resetTimer);
+    resetTimer();
+
+    return () => {
+      clearTimeout(timeoutId);
+      for (const eventName of activityEvents) {
+        window.removeEventListener(eventName, resetTimer);
+      }
+      document.removeEventListener("visibilitychange", resetTimer);
+    };
+  }, [status]);
 
   useEffect(() => {
     if (status !== "signed_out") return;

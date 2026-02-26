@@ -168,3 +168,20 @@ class SurveyResponseSerializer(serializers.ModelSerializer):
             )
 
         return SurveyResponse.objects.create(**validated_data)
+
+
+class DashboardSummarySerializer(serializers.Serializer):
+    total_surveys = serializers.IntegerField()
+    surveys_this_month = serializers.IntegerField()
+    surveys_this_week = serializers.IntegerField()
+    staffing_rate = serializers.FloatField()
+    top_water_source = serializers.CharField(allow_blank=True)
+    peak_survey_time = serializers.CharField(allow_blank=True)
+
+
+class DashboardRecentActivityItemSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    site_code = serializers.IntegerField(allow_null=True)
+    location = serializers.CharField(allow_blank=True, allow_null=True)
+    submitted_at = serializers.DateTimeField()
+    is_staffed = serializers.CharField(allow_blank=True, allow_null=True)
