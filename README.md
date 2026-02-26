@@ -1,26 +1,21 @@
-# Water Site Survey
+# Water Site Survey 2.0
 
-A web-based field data collection tool for water site assessments. Enumerators fill out a structured survey covering site background, staff interviews, and direct site observations. Responses are stored in PostgreSQL with one column per field for direct analytical use.
-
----
+Web-based water-site survey platform with Google-authenticated access, structured form capture, operational response management, and analytics dashboards.
 
 ## Stack
 
 | Layer | Technology |
 |---|---|
 | Frontend | Next.js 16 (App Router), TypeScript, Tailwind CSS |
-| Backend | Django 6, Django REST Framework |
+| Backend | Django + Django REST Framework + SimpleJWT |
 | Database | PostgreSQL |
-
----
+| Auth | Google Identity (frontend) + JWT issuance on backend |
 
 ## Prerequisites
 
 - Python 3.11+
 - Node.js 20+
-- PostgreSQL running locally
-
----
+- PostgreSQL
 
 ## Setup
 
@@ -29,83 +24,145 @@ A web-based field data collection tool for water site assessments. Enumerators f
 ```bash
 cd backend
 python -m venv venv
-venv\Scripts\activate        # Windows
-# source venv/bin/activate   # macOS/Linux
+venv\Scripts\activate
 pip install -r requirements.txt
-```
-
-Create `backend/.env`:
-
-```
-DATABASE_URL=postgres://USER:PASSWORD@localhost:5432/water_survey
-SECRET_KEY=your-secret-key
-DEBUG=True
-```
-
-Apply migrations and start the server:
-
-```bash
 python manage.py migrate
 python manage.py runserver
 ```
 
-The API will be available at `http://localhost:8000`.
+Create `backend/.env` (keys used by current settings):
+
+```env
+SECRET_KEY=replace-me
+DB_NAME=water_survey
+DB_USER=postgres
+DB_PASSWORD=replace-me
+DB_HOST=localhost
+DB_PORT=5432
+GOOGLE_OAUTH_CLIENT_ID=replace-me
+
+# Optional Cloudinary image hosting
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+```
+
+Backend runs on `http://localhost:8000`.
 
 ### Frontend
 
 ```bash
 cd frontend
 npm install
+npm run dev
 ```
 
 Create `frontend/.env.local`:
 
-```
-NEXT_PUBLIC_API_BASE=http://localhost:8000
-```
-
-Start the dev server:
-
-```bash
-npm run dev
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=replace-me
 ```
 
-The form will be available at `http://localhost:3000`.
+Frontend runs on `http://localhost:3000`.
 
----
+## App Flow
 
-## Project Structure
+1. Landing page (`/`) with `Log In`
+2. Login page (`/login`) using Google sign-in
+3. Protected app shell (`/app/*`) with sidebar:
+   - `Dashboard`
+   - `Surveys`
+   - `Responses`
+   - `Analytics`
 
-```
-backend/
-  apps/surveys/
-    models.py        — SurveyResponse model (flat columnar schema)
-    serializers.py   — DRF serializer; expands multi-select arrays to boolean columns
-    views.py         — Single POST endpoint
-    admin.py         — Django Admin with fieldsets
-    migrations/      — 0001 initial → 0002 flat columns → 0003 rename columns
+## Implemented Features
+
+### Surveys
+- Full dynamic form with conditional sections/fields.
+- Client validation and hidden-field clearing.
+- Authenticated submission to backend.
+
+### Responses (Operational)
+- Paginated list view.
+- Server-side filtering/sorting.
+- Inline record detail expansion.
+- CSV export with applied filters.
+
+### Dashboard (Operational Snapshot)
+- KPI summary cards from live data.
+- Recent activity (top 5).
+- Insight links deep-linking to filtered `Responses`.
+
+### Analytics v1 (Interpretation)
+- Date-range + site filter.
+- KPI cards (submissions, staffed %, treated %).
+- Submissions trend chart with `Bar | Line` toggle.
+- Water source distribution chart.
+- Site coverage donut chart.
+- Service quality indicators.
+- Drill-through links to filtered `Responses`.
+
+## API Endpoints
+
+Base prefix: `/api/`
+
+- `POST /auth/google/`
+- `GET /responses/` (filters, sorting, pagination)
+- `POST /responses/`
+- `GET /responses/<uuid:pk>/`
+- `GET /responses/export/csv/`
+- `GET /dashboard/summary/`
+- `GET /dashboard/recent/`
+- `GET /analytics/summary/`
+
+## Responses Query Parameters
+
+Supported on `GET /responses/` and CSV export:
+
+- `site_name`
+- `is_staffed` (`yes|no`)
+- `water_source_type`
+- `water_is_treated` (`yes|no`)
+- `used_for_drinking` (`yes|no`)
+- `submitted_after` (`YYYY-MM-DD`)
+- `submitted_before` (`YYYY-MM-DD`)
+- `period` (`this_week|this_month`)
+- `ordering` (`submitted_at|-submitted_at|site_code|-site_code|site_name|-site_name`)
+- `page`
+- `page_size`
+
+## Data Model Note
+
+Each submission is stored in a flat `survey_responses` row. Multi-select form fields are expanded to boolean columns:
+
+- `True` = option selected
+- `False` = option visible but not selected
+- `NULL` = question not shown
+
+## Project Structure (High Level)
+
+```text
+backend/apps/surveys/
+  models.py
+  serializers.py
+  views.py
+  urls.py
 
 frontend/
-  app/               — Next.js App Router entry point
-  components/survey/
-    SurveyForm.tsx   — Top-level form controller (state, validation, submit)
-    sections/        — Background, StaffInterview, SiteObservation components
-    fields/          — Reusable field components (SelectOne, SelectMultiple, etc.)
-  lib/
-    formEngine.ts    — Pure logic: visibility flags, field clearing
-    api.ts           — Axios POST to backend
-  types/
-    survey.ts        — TypeScript types and FieldId union
+  app/
+    page.tsx
+    login/page.tsx
+    app/
+      dashboard/page.tsx
+      surveys/page.tsx
+      responses/page.tsx
+      analytics/page.tsx
+  components/
+    auth/
+    navigation/
+    survey/
+  lib/api.ts
+  lib/formEngine.ts
+  types/survey.ts
 ```
-
----
-
-## Data Schema
-
-Each survey submission is one row in the `survey_responses` table. Multi-select questions (dry months, treatment methods, shore distances) are stored as individual boolean columns — `True` = selected, `False` = not selected, `NULL` = question was not shown to the enumerator.
-
----
-
-## Source Form
-
-`Water_Site_Survey.xlsx` — the original XLSForm this application is based on.
