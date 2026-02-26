@@ -1,5 +1,6 @@
 import axios from "axios";
 import {
+  AnalyticsSummaryResponse,
   DashboardRecentActivityItem,
   DashboardSummaryResponse,
   GoogleAuthResponse,
@@ -112,4 +113,21 @@ export async function exportSurveyResponsesCsv(
     responseType: "blob",
   });
   return response.data as Blob;
+}
+
+export async function getAnalyticsSummary(query: {
+  start_date?: string;
+  end_date?: string;
+  site_name?: string;
+} = {}): Promise<AnalyticsSummaryResponse> {
+  const params = new URLSearchParams();
+  if (query.start_date) params.set("start_date", query.start_date);
+  if (query.end_date) params.set("end_date", query.end_date);
+  if (query.site_name) params.set("site_name", query.site_name);
+
+  const queryString = params.toString();
+  const response = await api.get<AnalyticsSummaryResponse>(
+    `/analytics/summary/${queryString ? `?${queryString}` : ""}`
+  );
+  return response.data;
 }

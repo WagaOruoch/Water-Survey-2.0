@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from datetime import datetime, timedelta
 from django.db.models import Count
-from django.db.models.functions import ExtractHour
+from django.db.models.functions import ExtractHour, TruncDate
 from django.http import HttpResponse
 from django.utils import timezone
 import csv
@@ -121,6 +121,14 @@ class SurveyResponseListCreateView(APIView):
         water_source_type = request.query_params.get("water_source_type", "").strip()
         if water_source_type:
             responses = responses.filter(water_source_type=water_source_type)
+
+        water_is_treated = request.query_params.get("water_is_treated", "").strip().lower()
+        if water_is_treated in ["yes", "no"]:
+            responses = responses.filter(water_is_treated=water_is_treated)
+
+        used_for_drinking = request.query_params.get("used_for_drinking", "").strip().lower()
+        if used_for_drinking in ["yes", "no"]:
+            responses = responses.filter(used_for_drinking=used_for_drinking)
 
         submitted_after = request.query_params.get("submitted_after", "").strip()
         if submitted_after:
@@ -330,6 +338,14 @@ class SurveyResponseExportCsvView(APIView):
         if water_source_type:
             responses = responses.filter(water_source_type=water_source_type)
 
+        water_is_treated = request.query_params.get("water_is_treated", "").strip().lower()
+        if water_is_treated in ["yes", "no"]:
+            responses = responses.filter(water_is_treated=water_is_treated)
+
+        used_for_drinking = request.query_params.get("used_for_drinking", "").strip().lower()
+        if used_for_drinking in ["yes", "no"]:
+            responses = responses.filter(used_for_drinking=used_for_drinking)
+
         submitted_after = request.query_params.get("submitted_after", "").strip()
         if submitted_after:
             try:
@@ -380,3 +396,166 @@ class SurveyResponseExportCsvView(APIView):
             writer.writerow([row.get(header, "") for header in headers])
 
         return response
+
+
+class AnalyticsSummaryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        end_date_raw = request.query_params.get("end_date", "").strip()
+        start_date_raw = request.query_params.get("start_date", "").strip()
+        site_name = request.query_params.get("site_name", "").strip()
+
+        today = timezone.localdate()
+
+        if end_date_raw:
+            try:
+                end_date = datetime.strptime(end_date_raw, "%Y-%m-%d").date()
+            except ValueError:
+                return Response(
+                    {"error": "Invalid end_date format. Use YYYY-MM-DD."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        else:
+            end_date = today
+
+        if start_date_raw:
+            try:
+                start_date = datetime.strptime(start_date_raw, "%Y-%m-%d").date()
+            except ValueError:
+                return Response(
+                    {"error": "Invalid start_date format. Use YYYY-MM-DD."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        else:
+            start_date = end_date - timedelta(days=29)
+
+        if start_date > end_date:
+            return Response(
+                {"error": "start_date must be less than or equal to end_date."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        current_start_dt = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
+        current_end_dt = timezone.make_aware(datetime.combine(end_date + timedelta(days=1), datetime.min.time()))
+
+        period_days = (end_date - start_date).days + 1
+        previous_end_date = start_date - timedelta(days=1)
+        previous_start_date = previous_end_date - timedelta(days=period_days - 1)
+        previous_start_dt = timezone.make_aware(datetime.combine(previous_start_date, datetime.min.time()))
+        previous_end_dt = timezone.make_aware(datetime.combine(previous_end_date + timedelta(days=1), datetime.min.time()))
+
+        base_queryset = SurveyResponse.objects.filter(submitted_by=request.user)
+        if site_name:
+            base_queryset = base_queryset.filter(site_name=site_name)
+
+        current_queryset = base_queryset.filter(
+            submitted_at__gte=current_start_dt,
+            submitted_at__lt=current_end_dt,
+        )
+        previous_queryset = base_queryset.filter(
+            submitted_at__gte=previous_start_dt,
+            submitted_at__lt=previous_end_dt,
+        )
+
+        total_submissions = current_queryset.count()
+        previous_submissions = previous_queryset.count()
+        submissions_delta = total_submissions - previous_submissions
+
+        staffed_denominator = current_queryset.filter(is_staffed__in=["yes", "no"]).count()
+        staffed_numerator = current_queryset.filter(is_staffed="yes").count()
+        staffed_pct = round((staffed_numerator / staffed_denominator) * 100, 2) if staffed_denominator else 0.0
+
+        treated_denominator = current_queryset.filter(water_is_treated__in=["yes", "no"]).count()
+        treated_numerator = current_queryset.filter(water_is_treated="yes").count()
+        treated_pct = round((treated_numerator / treated_denominator) * 100, 2) if treated_denominator else 0.0
+
+        drinking_denominator = current_queryset.filter(used_for_drinking__in=["yes", "no"]).count()
+        drinking_numerator = current_queryset.filter(used_for_drinking="yes").count()
+        drinking_pct = round((drinking_numerator / drinking_denominator) * 100, 2) if drinking_denominator else 0.0
+
+        day_bucket_counts = {
+            row["day"]: row["total"]
+            for row in (
+                current_queryset.annotate(day=TruncDate("submitted_at"))
+                .values("day")
+                .annotate(total=Count("id"))
+                .order_by("day")
+            )
+        }
+
+        submissions_trend = []
+        cursor = start_date
+        while cursor <= end_date:
+            submissions_trend.append(
+                {
+                    "date": cursor.isoformat(),
+                    "count": int(day_bucket_counts.get(cursor, 0)),
+                }
+            )
+            cursor += timedelta(days=1)
+
+        water_source_distribution = [
+            {
+                "key": row["water_source_type"],
+                "count": row["total"],
+            }
+            for row in (
+                current_queryset.exclude(water_source_type__isnull=True)
+                .exclude(water_source_type="")
+                .values("water_source_type")
+                .annotate(total=Count("id"))
+                .order_by("-total", "water_source_type")
+            )
+        ]
+
+        source_total = sum(item["count"] for item in water_source_distribution)
+        for item in water_source_distribution:
+            item["percentage"] = round((item["count"] / source_total) * 100, 2) if source_total else 0.0
+
+        site_distribution = [
+            {
+                "site_name": row["site_name"] or "Unknown",
+                "count": row["total"],
+            }
+            for row in (
+                current_queryset.values("site_name")
+                .annotate(total=Count("id"))
+                .order_by("-total", "site_name")
+            )
+        ]
+
+        payload = {
+            "filters": {
+                "start_date": start_date.isoformat(),
+                "end_date": end_date.isoformat(),
+                "site_name": site_name,
+            },
+            "kpis": {
+                "total_submissions": {
+                    "value": total_submissions,
+                    "delta": submissions_delta,
+                    "previous_value": previous_submissions,
+                },
+                "staffed_sites_pct": {
+                    "value": staffed_pct,
+                    "numerator": staffed_numerator,
+                    "denominator": staffed_denominator,
+                },
+                "treated_water_pct": {
+                    "value": treated_pct,
+                    "numerator": treated_numerator,
+                    "denominator": treated_denominator,
+                },
+            },
+            "submissions_trend": submissions_trend,
+            "water_source_distribution": water_source_distribution,
+            "site_distribution": site_distribution,
+            "service_quality": {
+                "staffed_pct": staffed_pct,
+                "treated_pct": treated_pct,
+                "drinking_pct": drinking_pct,
+            },
+        }
+
+        return Response(payload)

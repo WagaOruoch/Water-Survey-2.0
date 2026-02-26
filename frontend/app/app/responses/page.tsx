@@ -37,6 +37,8 @@ export default function ResponsesPage() {
   const [siteName, setSiteName] = useState("");
   const [isStaffed, setIsStaffed] = useState<"" | "yes" | "no">("");
   const [waterSourceType, setWaterSourceType] = useState("");
+  const [waterIsTreated, setWaterIsTreated] = useState<"" | "yes" | "no">("");
+  const [usedForDrinking, setUsedForDrinking] = useState<"" | "yes" | "no">("");
   const [submittedAfter, setSubmittedAfter] = useState("");
   const [submittedBefore, setSubmittedBefore] = useState("");
   const [period, setPeriod] = useState<"" | "this_week" | "this_month">("");
@@ -59,6 +61,8 @@ export default function ResponsesPage() {
       site_name: siteName,
       is_staffed: isStaffed,
       water_source_type: waterSourceType,
+      water_is_treated: waterIsTreated,
+      used_for_drinking: usedForDrinking,
       submitted_after: submittedAfter,
       submitted_before: submittedBefore,
       period,
@@ -75,7 +79,9 @@ export default function ResponsesPage() {
       siteName,
       submittedAfter,
       submittedBefore,
+      usedForDrinking,
       waterSourceType,
+      waterIsTreated,
     ]
   );
 
@@ -83,10 +89,20 @@ export default function ResponsesPage() {
     const initialSite = searchParams.get("site_name") ?? "";
     const initialStaffed = (searchParams.get("is_staffed") ?? "") as "" | "yes" | "no";
     const initialPeriod = (searchParams.get("period") ?? "") as "" | "this_week" | "this_month";
+    const initialSource = searchParams.get("water_source_type") ?? "";
+    const initialTreated = (searchParams.get("water_is_treated") ?? "") as "" | "yes" | "no";
+    const initialDrinking = (searchParams.get("used_for_drinking") ?? "") as "" | "yes" | "no";
+    const initialAfter = searchParams.get("submitted_after") ?? "";
+    const initialBefore = searchParams.get("submitted_before") ?? "";
 
     if (initialSite) setSiteName(initialSite);
     if (["yes", "no", ""].includes(initialStaffed)) setIsStaffed(initialStaffed);
     if (["this_week", "this_month", ""].includes(initialPeriod)) setPeriod(initialPeriod);
+    if (initialSource) setWaterSourceType(initialSource);
+    if (["yes", "no", ""].includes(initialTreated)) setWaterIsTreated(initialTreated);
+    if (["yes", "no", ""].includes(initialDrinking)) setUsedForDrinking(initialDrinking);
+    if (initialAfter) setSubmittedAfter(initialAfter);
+    if (initialBefore) setSubmittedBefore(initialBefore);
   }, [searchParams]);
 
   useEffect(() => {
@@ -164,6 +180,8 @@ export default function ResponsesPage() {
     setSiteName("");
     setIsStaffed("");
     setWaterSourceType("");
+    setWaterIsTreated("");
+    setUsedForDrinking("");
     setSubmittedAfter("");
     setSubmittedBefore("");
     setPeriod("");
@@ -259,6 +277,32 @@ export default function ResponsesPage() {
             <option value="">Period: all</option>
             <option value="this_week">This week</option>
             <option value="this_month">This month</option>
+          </select>
+
+          <select
+            value={waterIsTreated}
+            onChange={(e) => {
+              setPage(1);
+              setWaterIsTreated(e.target.value as "" | "yes" | "no");
+            }}
+            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+          >
+            <option value="">Treated: all</option>
+            <option value="yes">Treated: yes</option>
+            <option value="no">Treated: no</option>
+          </select>
+
+          <select
+            value={usedForDrinking}
+            onChange={(e) => {
+              setPage(1);
+              setUsedForDrinking(e.target.value as "" | "yes" | "no");
+            }}
+            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+          >
+            <option value="">Drinking use: all</option>
+            <option value="yes">Drinking use: yes</option>
+            <option value="no">Drinking use: no</option>
           </select>
 
           <input

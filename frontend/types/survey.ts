@@ -160,6 +160,8 @@ export interface SurveyResponsesQuery {
   site_name?: string;
   is_staffed?: "yes" | "no" | "";
   water_source_type?: string;
+  water_is_treated?: "yes" | "no" | "";
+  used_for_drinking?: "yes" | "no" | "";
   submitted_after?: string;
   submitted_before?: string;
   period?: "" | "this_week" | "this_month";
@@ -174,6 +176,51 @@ export interface PaginatedSurveyResponses {
   page: number;
   page_size: number;
   total_pages: number;
+}
+
+export interface AnalyticsKpiMetric {
+  value: number;
+  numerator?: number;
+  denominator?: number;
+  delta?: number;
+  previous_value?: number;
+}
+
+export interface AnalyticsTrendItem {
+  date: string;
+  count: number;
+}
+
+export interface AnalyticsWaterSourceItem {
+  key: string;
+  count: number;
+  percentage: number;
+}
+
+export interface AnalyticsSiteDistributionItem {
+  site_name: string;
+  count: number;
+}
+
+export interface AnalyticsSummaryResponse {
+  filters: {
+    start_date: string;
+    end_date: string;
+    site_name: string;
+  };
+  kpis: {
+    total_submissions: AnalyticsKpiMetric;
+    staffed_sites_pct: AnalyticsKpiMetric;
+    treated_water_pct: AnalyticsKpiMetric;
+  };
+  submissions_trend: AnalyticsTrendItem[];
+  water_source_distribution: AnalyticsWaterSourceItem[];
+  site_distribution: AnalyticsSiteDistributionItem[];
+  service_quality: {
+    staffed_pct: number;
+    treated_pct: number;
+    drinking_pct: number;
+  };
 }
 
 export interface DashboardSummaryResponse {
