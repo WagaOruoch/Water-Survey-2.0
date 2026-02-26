@@ -1,4 +1,5 @@
 from django.urls import path
+from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     AnalyticsSummaryView,
     DashboardRecentActivityView,
@@ -11,6 +12,7 @@ from .views import (
 
 urlpatterns = [
     path("auth/google/", GoogleAuthView.as_view(), name="auth-google"),
+    path("auth/refresh/", TokenRefreshView.as_view(), name="auth-refresh"),
     path("analytics/summary/", AnalyticsSummaryView.as_view(), name="analytics-summary"),
     path("responses/", SurveyResponseListCreateView.as_view(), name="response-list-create"),
     path("responses/<uuid:pk>/", SurveyResponseDetailView.as_view(), name="response-detail"),

@@ -2,7 +2,11 @@
 
 import { ReactNode, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AUTH_EXPIRED_EVENT, clearAccessToken, getAccessToken } from "@/lib/api";
+import {
+  AUTH_EXPIRED_EVENT,
+  clearSessionTokens,
+  ensureSession,
+} from "@/lib/api";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -13,22 +17,28 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    const token = getAccessToken();
-    if (!token) {
-      router.replace("/login");
+    let isMounted = true;
+
+    const check = async () => {
+      const ok = await ensureSession();
+      if (!isMounted) return;
+      if (!ok) {
+        router.replace("/login");
+      }
       setIsChecking(false);
-      return;
-    }
+    };
+
+    check();
 
     const onAuthExpired = () => {
-      clearAccessToken();
+      clearSessionTokens();
       router.replace("/login");
     };
 
     window.addEventListener(AUTH_EXPIRED_EVENT, onAuthExpired);
-    setIsChecking(false);
 
     return () => {
+      isMounted = false;
       window.removeEventListener(AUTH_EXPIRED_EVENT, onAuthExpired);
     };
   }, [router]);

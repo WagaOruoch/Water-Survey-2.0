@@ -4,15 +4,26 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import GoogleLoginCard from "@/components/auth/GoogleLoginCard";
-import { getAccessToken } from "@/lib/api";
+import { ensureSession } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (getAccessToken()) {
-      router.replace("/app/dashboard");
-    }
+    let isMounted = true;
+
+    const check = async () => {
+      const ok = await ensureSession();
+      if (isMounted && ok) {
+        router.replace("/app/dashboard");
+      }
+    };
+
+    check();
+
+    return () => {
+      isMounted = false;
+    };
   }, [router]);
 
   return (

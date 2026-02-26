@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import SurveyForm from "@/components/survey/SurveyForm";
 import {
   AUTH_EXPIRED_EVENT,
-  clearAccessToken,
+  clearSessionTokens,
   getAccessToken,
   signInWithGoogle,
 } from "@/lib/api";
@@ -39,11 +39,15 @@ type AuthStatus = "checking" | "signed_out" | "signed_in" | "error";
 const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000;
 
 export default function SurveyCorpAuthGate() {
-  const [status, setStatus] = useState<AuthStatus>("checking");
+  const [status, setStatus] = useState<AuthStatus>(() =>
+    getAccessToken() ? "signed_in" : "signed_out"
+  );
   const [authError, setAuthError] = useState("");
   const [user, setUser] = useState<AuthUser | null>(null);
 
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
+  const configError =
+    !googleClientId ? "NEXT_PUBLIC_GOOGLE_CLIENT_ID is missing in frontend .env." : "";
 
   const authReady = useMemo(
     () => status === "signed_in" && !!getAccessToken(),
@@ -51,17 +55,8 @@ export default function SurveyCorpAuthGate() {
   );
 
   useEffect(() => {
-    const token = getAccessToken();
-    if (token) {
-      setStatus("signed_in");
-      return;
-    }
-    setStatus("signed_out");
-  }, []);
-
-  useEffect(() => {
     const onAuthExpired = () => {
-      clearAccessToken();
+      clearSessionTokens();
       setUser(null);
       setStatus("signed_out");
       setAuthError("Session expired. Please sign in again.");
@@ -77,7 +72,7 @@ export default function SurveyCorpAuthGate() {
     let timeoutId: ReturnType<typeof setTimeout>;
 
     const signOutForInactivity = () => {
-      clearAccessToken();
+      clearSessionTokens();
       setUser(null);
       setStatus("signed_out");
       setAuthError("You were logged out after 15 minutes of inactivity.");
@@ -114,12 +109,7 @@ export default function SurveyCorpAuthGate() {
 
   useEffect(() => {
     if (status !== "signed_out") return;
-
-    if (!googleClientId) {
-      setStatus("error");
-      setAuthError("NEXT_PUBLIC_GOOGLE_CLIENT_ID is missing in frontend .env.");
-      return;
-    }
+    if (configError) return;
 
     const buttonContainer = document.getElementById("google-signin-button");
     if (!buttonContainer) return;
@@ -146,7 +136,7 @@ export default function SurveyCorpAuthGate() {
             setStatus("signed_in");
             setAuthError("");
           } catch {
-            clearAccessToken();
+            clearSessionTokens();
             setStatus("error");
             setAuthError("Sign-in failed. Please confirm backend Google settings.");
           }
@@ -174,10 +164,10 @@ export default function SurveyCorpAuthGate() {
     script.defer = true;
     script.onload = initGoogle;
     document.head.appendChild(script);
-  }, [googleClientId, status]);
+  }, [configError, googleClientId, status]);
 
   function handleSignOut() {
-    clearAccessToken();
+    clearSessionTokens();
     setUser(null);
     setStatus("signed_out");
   }
@@ -192,9 +182,9 @@ export default function SurveyCorpAuthGate() {
 
         <div id="google-signin-button" className="mt-6" />
 
-        {status === "error" && (
+        {(status === "error" || configError) && (
           <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-            {authError}
+            {authError || configError}
           </p>
         )}
       </div>

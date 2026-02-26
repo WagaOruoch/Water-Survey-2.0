@@ -1,11 +1,11 @@
 import axios from "axios";
 import {
   AnalyticsSummaryResponse,
+  AuthUser,
   DashboardRecentActivityItem,
   DashboardSummaryResponse,
   GoogleAuthResponse,
   PaginatedSurveyResponses,
-  SurveyResponseDetail,
   SurveyResponsesQuery,
   SurveySubmitPayload,
   SurveySubmitResponse,
@@ -19,7 +19,11 @@ const api = axios.create({
 });
 
 const ACCESS_TOKEN_KEY = "surveycorp_access_token";
+const REFRESH_TOKEN_KEY = "surveycorp_refresh_token";
+const AUTH_USER_KEY = "surveycorp_auth_user";
 export const AUTH_EXPIRED_EVENT = "surveycorp-auth-expired";
+
+let refreshPromise: Promise<string> | null = null;
 
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
@@ -34,11 +38,40 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (typeof window !== "undefined" && error?.response?.status === 401) {
-      window.localStorage.removeItem(ACCESS_TOKEN_KEY);
-      window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
+  async (error) => {
+    const originalRequest = error?.config as
+      | (typeof error.config & { _retry?: boolean })
+      | undefined;
+    const requestUrl = String(originalRequest?.url ?? "");
+    const isRefreshRequest = requestUrl.includes("/auth/refresh/");
+
+    if (typeof window !== "undefined" && error?.response?.status === 401 && originalRequest) {
+      if (isRefreshRequest) {
+        clearSessionTokens();
+        window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
+        return Promise.reject(error);
+      }
+
+      if (originalRequest._retry) {
+        clearSessionTokens();
+        window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
+        return Promise.reject(error);
+      }
+
+      originalRequest._retry = true;
+
+      try {
+        const newAccess = await refreshAccessToken();
+        originalRequest.headers = originalRequest.headers ?? {};
+        originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+        return api.request(originalRequest);
+      } catch {
+        clearSessionTokens();
+        window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
+        return Promise.reject(error);
+      }
     }
+
     return Promise.reject(error);
   }
 );
@@ -53,9 +86,100 @@ export function clearAccessToken(): void {
   window.localStorage.removeItem(ACCESS_TOKEN_KEY);
 }
 
+export function clearRefreshToken(): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(REFRESH_TOKEN_KEY);
+}
+
+export function clearSessionTokens(): void {
+  clearAccessToken();
+  clearRefreshToken();
+  clearAuthUser();
+}
+
 export function setAccessToken(token: string): void {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(ACCESS_TOKEN_KEY, token);
+}
+
+export function getRefreshToken(): string {
+  if (typeof window === "undefined") return "";
+  return window.localStorage.getItem(REFRESH_TOKEN_KEY) ?? "";
+}
+
+export function setRefreshToken(token: string): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(REFRESH_TOKEN_KEY, token);
+}
+
+export function getAuthUser(): AuthUser | null {
+  if (typeof window === "undefined") return null;
+
+  const raw = window.localStorage.getItem(AUTH_USER_KEY);
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw) as AuthUser;
+  } catch {
+    return null;
+  }
+}
+
+export function setAuthUser(user: AuthUser): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+}
+
+export function clearAuthUser(): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(AUTH_USER_KEY);
+}
+
+export async function refreshAccessToken(): Promise<string> {
+  if (typeof window === "undefined") {
+    throw new Error("Cannot refresh token outside browser context");
+  }
+
+  if (refreshPromise) return refreshPromise;
+
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) {
+    throw new Error("No refresh token available");
+  }
+
+  refreshPromise = api
+    .post<{ access: string; refresh?: string }>("/auth/refresh/", {
+      refresh: refreshToken,
+    })
+    .then((response) => {
+      const nextAccess = response.data.access;
+      setAccessToken(nextAccess);
+      if (response.data.refresh) {
+        setRefreshToken(response.data.refresh);
+      }
+      return nextAccess;
+    })
+    .finally(() => {
+      refreshPromise = null;
+    });
+
+  return refreshPromise;
+}
+
+export async function ensureSession(): Promise<boolean> {
+  const accessToken = getAccessToken();
+  if (accessToken) return true;
+
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return false;
+
+  try {
+    await refreshAccessToken();
+    return true;
+  } catch {
+    clearSessionTokens();
+    return false;
+  }
 }
 
 export async function signInWithGoogle(
@@ -65,6 +189,8 @@ export async function signInWithGoogle(
     id_token: idToken,
   });
   setAccessToken(response.data.access);
+  setRefreshToken(response.data.refresh);
+  setAuthUser(response.data.user);
   return response.data;
 }
 

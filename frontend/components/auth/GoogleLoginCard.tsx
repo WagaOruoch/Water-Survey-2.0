@@ -40,12 +40,11 @@ export default function GoogleLoginCard({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
+  const configError =
+    !googleClientId ? "NEXT_PUBLIC_GOOGLE_CLIENT_ID is missing in frontend .env." : "";
 
   useEffect(() => {
-    if (!googleClientId) {
-      setError("NEXT_PUBLIC_GOOGLE_CLIENT_ID is missing in frontend .env.");
-      return;
-    }
+    if (!googleClientId) return;
 
     const buttonContainer = document.getElementById("google-signin-button");
     if (!buttonContainer) return;
@@ -116,6 +115,12 @@ export default function GoogleLoginCard({
       {error && (
         <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
+        </p>
+      )}
+
+      {!error && configError && (
+        <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          {configError}
         </p>
       )}
     </div>

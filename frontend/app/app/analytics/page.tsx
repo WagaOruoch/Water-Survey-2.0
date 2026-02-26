@@ -39,6 +39,16 @@ function describeArc(
   return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`;
 }
 
+const SITE_PALETTE = ["#2563eb", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444", "#06b6d4", "#84cc16"];
+
+const SOURCE_PALETTE: Record<string, string> = {
+  piped: "#2563eb",
+  well: "#16a34a",
+  spring: "#f59e0b",
+  packaged: "#8b5cf6",
+  other_sources: "#ef4444",
+};
+
 export default function AnalyticsPage() {
   const today = new Date();
   const defaultStart = new Date(today);
@@ -51,6 +61,7 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [trendMode, setTrendMode] = useState<"bar" | "line">("bar");
+  const [activePreset, setActivePreset] = useState<7 | 30 | 90 | "custom">(30);
 
   useEffect(() => {
     let isMounted = true;
@@ -132,11 +143,6 @@ export default function AnalyticsPage() {
     return Math.max(...data.water_source_distribution.map((item) => item.count), 1);
   }, [data?.water_source_distribution]);
 
-  const siteMax = useMemo(() => {
-    if (!data?.site_distribution?.length) return 1;
-    return Math.max(...data.site_distribution.map((item) => item.count), 1);
-  }, [data?.site_distribution]);
-
   const sourceLabels: Record<string, string> = {
     piped: "Piped",
     well: "Well",
@@ -144,16 +150,6 @@ export default function AnalyticsPage() {
     packaged: "Packaged",
     other_sources: "Other sources",
   };
-
-  const sitePalette = [
-    "#2563eb",
-    "#10b981",
-    "#f59e0b",
-    "#8b5cf6",
-    "#ef4444",
-    "#06b6d4",
-    "#84cc16",
-  ];
 
   const siteOptions = useMemo(() => {
     const values = new Set<string>();
@@ -183,7 +179,7 @@ export default function AnalyticsPage() {
         percent,
         startAngle,
         endAngle,
-        color: sitePalette[index % sitePalette.length],
+        color: SITE_PALETTE[index % SITE_PALETTE.length],
       };
     });
   }, [data?.site_distribution, siteDistributionTotal]);
@@ -194,7 +190,29 @@ export default function AnalyticsPage() {
     start.setDate(end.getDate() - (days - 1));
     setStartDate(toIsoDate(start));
     setEndDate(toIsoDate(end));
+    if (days === 7 || days === 30 || days === 90) {
+      setActivePreset(days);
+    }
   }
+
+  function handleStartDateChange(value: string) {
+    setStartDate(value);
+    setActivePreset("custom");
+  }
+
+  function handleEndDateChange(value: string) {
+    setEndDate(value);
+    setActivePreset("custom");
+  }
+
+  const activeRangeLabel =
+    activePreset === "custom"
+      ? "Custom range"
+      : activePreset === 7
+        ? "Last 7 days"
+        : activePreset === 30
+          ? "Last 30 days"
+          : "Last 90 days";
 
   const totalSubmissions = data?.kpis.total_submissions.value ?? 0;
   const totalDelta = data?.kpis.total_submissions.delta ?? 0;
@@ -216,21 +234,33 @@ export default function AnalyticsPage() {
           <button
             type="button"
             onClick={() => applyPreset(7)}
-            className="ui-btn-swap rounded-md bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-200"
+            className={`ui-btn-swap rounded-md px-3 py-2 text-xs font-semibold ${
+              activePreset === 7
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
           >
             Last 7 days
           </button>
           <button
             type="button"
             onClick={() => applyPreset(30)}
-            className="ui-btn-swap rounded-md bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-200"
+            className={`ui-btn-swap rounded-md px-3 py-2 text-xs font-semibold ${
+              activePreset === 30
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
           >
             Last 30 days
           </button>
           <button
             type="button"
             onClick={() => applyPreset(90)}
-            className="ui-btn-swap rounded-md bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-200"
+            className={`ui-btn-swap rounded-md px-3 py-2 text-xs font-semibold ${
+              activePreset === 90
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
           >
             Last 90 days
           </button>
@@ -242,13 +272,13 @@ export default function AnalyticsPage() {
           <input
             type="date"
             value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            onChange={(e) => handleStartDateChange(e.target.value)}
             className="rounded-md border border-gray-300 px-3 py-2 text-sm"
           />
           <input
             type="date"
             value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
+            onChange={(e) => handleEndDateChange(e.target.value)}
             className="rounded-md border border-gray-300 px-3 py-2 text-sm"
           />
           <select
@@ -264,7 +294,7 @@ export default function AnalyticsPage() {
             ))}
           </select>
           <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">
-            {startDate} to {endDate}
+            {startDate} to {endDate} · {activeRangeLabel}
           </div>
         </div>
       </section>
@@ -450,6 +480,7 @@ export default function AnalyticsPage() {
                 {(data?.water_source_distribution ?? []).map((item) => {
                   const height = Math.max((item.count / sourceMax) * 100, 6);
                   const label = sourceLabels[item.key] ?? item.key;
+                  const barColor = SOURCE_PALETTE[item.key] ?? "#2563eb";
 
                   return (
                     <Link
@@ -460,8 +491,8 @@ export default function AnalyticsPage() {
                     >
                       <div className="mb-2 text-xs text-gray-600">{item.count}</div>
                       <div
-                        className="w-full rounded-t-md bg-blue-600 transition-all duration-150 group-hover:scale-y-[1.03] group-hover:bg-blue-700"
-                        style={{ height: `${height}%` }}
+                        className="w-full rounded-t-md transition-all duration-150 group-hover:scale-y-[1.03] group-hover:opacity-90"
+                        style={{ height: `${height}%`, backgroundColor: barColor }}
                       />
                       <div className="mt-2 text-center text-xs text-gray-600">{label}</div>
                       <div className="text-[11px] text-gray-500">{item.percentage.toFixed(1)}%</div>

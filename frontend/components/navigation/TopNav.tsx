@@ -1,13 +1,15 @@
 "use client";
 
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { clearAccessToken } from "@/lib/api";
+import { clearSessionTokens, getAuthUser } from "@/lib/api";
 
 export default function TopNav() {
   const router = useRouter();
+  const authUser = useMemo(() => getAuthUser(), []);
 
   function handleLogout() {
-    clearAccessToken();
+    clearSessionTokens();
     router.replace("/login");
   }
 
@@ -16,12 +18,11 @@ export default function TopNav() {
       <h1 className="text-xl font-semibold">Water Survey System</h1>
 
       <div className="flex items-center gap-4">
-        <div className="min-w-60 rounded-md bg-white/20 px-3 py-2">
-          <input
-            type="text"
-            placeholder="Search..."
-            className="w-full bg-transparent text-sm text-white placeholder:text-white/75 focus:outline-none"
-          />
+        <div className="px-1 py-1 text-right leading-tight">
+          <p className="text-sm font-semibold text-white">
+            {authUser?.name || authUser?.email || "[My email]"}
+          </p>
+          <p className="text-xs text-white/80">{authUser?.email ?? "[My email]"}</p>
         </div>
 
         <button
