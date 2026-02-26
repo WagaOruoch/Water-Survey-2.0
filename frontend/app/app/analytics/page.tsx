@@ -216,21 +216,21 @@ export default function AnalyticsPage() {
           <button
             type="button"
             onClick={() => applyPreset(7)}
-            className="rounded-md bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-200"
+            className="ui-btn-swap rounded-md bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-200"
           >
             Last 7 days
           </button>
           <button
             type="button"
             onClick={() => applyPreset(30)}
-            className="rounded-md bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-200"
+            className="ui-btn-swap rounded-md bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-200"
           >
             Last 30 days
           </button>
           <button
             type="button"
             onClick={() => applyPreset(90)}
-            className="rounded-md bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-200"
+            className="ui-btn-swap rounded-md bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-200"
           >
             Last 90 days
           </button>
@@ -278,7 +278,7 @@ export default function AnalyticsPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Link
           href={`/app/responses?${responsesBaseParams}${siteParam}`}
-          className="rounded-lg bg-white p-5 shadow-sm transition hover:bg-blue-50"
+          className="analytics-card-link rounded-lg bg-white p-5 shadow-sm"
         >
           <p className="text-sm font-medium text-gray-500">Total Submissions</p>
           <p className="mt-2 text-3xl font-bold text-gray-900">{loading ? "..." : totalSubmissions}</p>
@@ -289,7 +289,7 @@ export default function AnalyticsPage() {
 
         <Link
           href={`/app/responses?${responsesBaseParams}${siteParam}&is_staffed=yes`}
-          className="rounded-lg bg-white p-5 shadow-sm transition hover:bg-blue-50"
+          className="analytics-card-link rounded-lg bg-white p-5 shadow-sm"
         >
           <p className="text-sm font-medium text-gray-500">Staffed Sites</p>
           <p className="mt-2 text-3xl font-bold text-gray-900">{loading ? "..." : formatPct(staffedPct)}</p>
@@ -298,7 +298,7 @@ export default function AnalyticsPage() {
 
         <Link
           href={`/app/responses?${responsesBaseParams}${siteParam}&water_is_treated=yes`}
-          className="rounded-lg bg-white p-5 shadow-sm transition hover:bg-blue-50"
+          className="analytics-card-link rounded-lg bg-white p-5 shadow-sm"
         >
           <p className="text-sm font-medium text-gray-500">Treated Water</p>
           <p className="mt-2 text-3xl font-bold text-gray-900">{loading ? "..." : formatPct(treatedPct)}</p>
@@ -314,7 +314,7 @@ export default function AnalyticsPage() {
               <button
                 type="button"
                 onClick={() => setTrendMode("bar")}
-                className={`rounded px-2 py-1 text-xs font-semibold ${
+                className={`ui-btn-swap rounded px-2 py-1 text-xs font-semibold ${
                   trendMode === "bar"
                     ? "bg-white text-blue-700 shadow-sm"
                     : "text-gray-600 hover:text-gray-800"
@@ -325,7 +325,7 @@ export default function AnalyticsPage() {
               <button
                 type="button"
                 onClick={() => setTrendMode("line")}
-                className={`rounded px-2 py-1 text-xs font-semibold ${
+                className={`ui-btn-swap rounded px-2 py-1 text-xs font-semibold ${
                   trendMode === "line"
                     ? "bg-white text-blue-700 shadow-sm"
                     : "text-gray-600 hover:text-gray-800"

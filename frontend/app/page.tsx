@@ -7,7 +7,7 @@ export default function Home() {
         <h1 className="text-xl font-semibold">Survey Corp</h1>
         <Link
           href="/login"
-          className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
+          className="ui-btn-swap rounded-md bg-white px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
         >
           Log In
         </Link>
@@ -25,7 +25,7 @@ export default function Home() {
           <div className="mt-6">
             <Link
               href="/login"
-              className="inline-flex rounded-md bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+              className="ui-btn-swap inline-flex rounded-md bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
             >
               Proceed to Login
             </Link>

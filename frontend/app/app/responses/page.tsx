@@ -198,6 +198,7 @@ export default function ResponsesPage() {
         </div>
         <Link
           href="/app/dashboard"
+          data-btn="true"
           className="rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
         >
           Back to Dashboard
@@ -211,7 +212,7 @@ export default function ResponsesPage() {
             <button
               type="button"
               onClick={resetFilters}
-              className="rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
+              className="ui-btn-swap rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
             >
               Reset
             </button>
@@ -219,7 +220,7 @@ export default function ResponsesPage() {
               type="button"
               onClick={handleExportCsv}
               disabled={exporting}
-              className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+              className="ui-btn-swap rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
             >
               {exporting ? "Exporting..." : "Export CSV"}
             </button>
@@ -443,7 +444,7 @@ export default function ResponsesPage() {
                         <button
                           type="button"
                           onClick={() => setExpandedId((prev) => (prev === row.id ? "" : row.id))}
-                          className="inline-block rounded bg-gray-100 px-3 py-1 text-sm text-gray-700 transition duration-150 hover:scale-105 hover:bg-blue-600 hover:text-white"
+                          className="ui-btn-swap inline-block rounded bg-gray-100 px-3 py-1 text-sm text-gray-700 transition duration-150 hover:scale-105 hover:bg-blue-600 hover:text-white"
                         >
                           {isExpanded ? "Hide" : "View"}
                         </button>
@@ -500,7 +501,7 @@ export default function ResponsesPage() {
             type="button"
             disabled={page <= 1}
             onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-            className="rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200 disabled:opacity-50"
+            className="ui-btn-swap rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200 disabled:opacity-50"
           >
             Previous
           </button>
@@ -509,7 +510,7 @@ export default function ResponsesPage() {
             type="button"
             disabled={page >= totalPages}
             onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-            className="rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200 disabled:opacity-50"
+            className="ui-btn-swap rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200 disabled:opacity-50"
           >
             Next
           </button>

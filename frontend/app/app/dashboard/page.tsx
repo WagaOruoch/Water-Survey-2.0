@@ -102,17 +102,17 @@ export default function DashboardPage() {
       )}
 
       <div className="mb-8 grid gap-6 md:grid-cols-3">
-        <Link href="/app/responses" className="rounded-lg bg-white p-6 shadow-sm transition hover:scale-[1.01] hover:bg-blue-50">
+        <Link href="/app/responses" className="analytics-card-link rounded-lg bg-white p-6 shadow-sm">
           <div className="mb-2 text-sm font-medium uppercase tracking-wide text-gray-500">Total</div>
           <div className="mb-1 text-4xl font-bold text-gray-900">{loading ? "..." : totalSurveys}</div>
           <div className="text-sm text-gray-500">surveys</div>
         </Link>
-        <Link href="/app/responses?period=this_month" className="rounded-lg bg-white p-6 shadow-sm transition hover:scale-[1.01] hover:bg-blue-50">
+        <Link href="/app/responses?period=this_month" className="analytics-card-link rounded-lg bg-white p-6 shadow-sm">
           <div className="mb-2 text-sm font-medium uppercase tracking-wide text-gray-500">This Month</div>
           <div className="mb-1 text-4xl font-bold text-gray-900">{loading ? "..." : surveysThisMonth}</div>
           <div className="text-sm text-gray-500">surveys</div>
         </Link>
-        <Link href="/app/responses?period=this_week" className="rounded-lg bg-white p-6 shadow-sm transition hover:scale-[1.01] hover:bg-blue-50">
+        <Link href="/app/responses?period=this_week" className="analytics-card-link rounded-lg bg-white p-6 shadow-sm">
           <div className="mb-2 text-sm font-medium uppercase tracking-wide text-gray-500">This Week</div>
           <div className="mb-1 text-4xl font-bold text-gray-900">{loading ? "..." : surveysThisWeek}</div>
           <div className="text-sm text-gray-500">surveys</div>
@@ -124,6 +124,7 @@ export default function DashboardPage() {
           <h3 className="text-xl font-semibold text-gray-900">Recent Activity</h3>
           <Link
             href="/app/responses"
+            data-btn="true"
             className="inline-block rounded px-2 py-1 text-sm font-medium text-blue-600 transition duration-150 hover:scale-105 hover:bg-blue-600 hover:text-white"
           >
             View All
@@ -177,6 +178,7 @@ export default function DashboardPage() {
                     <td className="border-b border-gray-200 px-4 py-4">
                       <Link
                         href={`/app/responses?focus=${item.id}`}
+                        data-btn="true"
                         className="rounded bg-gray-100 px-3 py-1 text-sm text-gray-700 transition duration-150 hover:scale-105 hover:bg-blue-600 hover:text-white"
                       >
                         View

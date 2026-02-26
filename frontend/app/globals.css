@@ -9,3 +9,42 @@ body {
   background-color: #f9fafb;
   color: #111827;
 }
+
+.ui-btn-swap {
+  transition: transform 150ms ease, background-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+
+.ui-btn-swap:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.02);
+}
+
+.ui-btn-swap:not([class*="bg-blue"][class*="text-white"]):hover:not(:disabled) {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  box-shadow: inset 0 0 0 1px #2563eb;
+}
+
+.ui-btn-swap[class*="bg-blue"][class*="text-white"]:hover:not(:disabled) {
+  background-color: #ffffff !important;
+  color: #2563eb !important;
+  box-shadow: inset 0 0 0 1px #2563eb;
+}
+
+.ui-btn-swap:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+}
+
+.analytics-card-link {
+  border: 1px solid transparent;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease;
+}
+
+.analytics-card-link:hover {
+  transform: translateY(-2px) scale(1.01);
+  border-color: #d1d5db;
+  box-shadow: 0 10px 24px -14px rgba(15, 23, 42, 0.35);
+}
+
+.analytics-card-link:active {
+  transform: translateY(0) scale(0.995);
+}

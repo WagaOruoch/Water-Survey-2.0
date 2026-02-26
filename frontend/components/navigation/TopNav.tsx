@@ -27,7 +27,7 @@ export default function TopNav() {
         <button
           type="button"
           onClick={handleLogout}
-          className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
+          className="ui-btn-swap rounded-md bg-white px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
         >
           Log Out
         </button>

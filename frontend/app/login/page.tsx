@@ -21,7 +21,7 @@ export default function LoginPage() {
         <h1 className="text-xl font-semibold">Survey Corp</h1>
         <Link
           href="/"
-          className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
+          className="ui-btn-swap rounded-md bg-white px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
         >
           Back to Home
         </Link>
