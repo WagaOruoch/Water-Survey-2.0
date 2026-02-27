@@ -13,7 +13,7 @@ Web-based water-site survey platform with Google-authenticated access, structure
 
 ## Prerequisites
 
-- Python 3.11+
+- Python 3.12+
 - Node.js 20+
 - PostgreSQL
 
