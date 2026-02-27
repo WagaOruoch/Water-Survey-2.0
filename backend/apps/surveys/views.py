@@ -11,6 +11,7 @@ import csv
 import hashlib
 import json
 import logging
+import os
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token as google_id_token
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -29,6 +30,22 @@ from .serializers import (
 
 
 logger = logging.getLogger(__name__)
+
+
+def _auth_debug_enabled() -> bool:
+    return os.getenv("AUTH_DEBUG_ERRORS", "false").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
+def _auth_error(message: str, status_code: int, detail: str | None = None) -> Response:
+    payload = {"error": message}
+    if detail and _auth_debug_enabled():
+        payload["detail"] = detail
+    return Response(payload, status=status_code)
 
 
 def _cache_version_key(user_id: int) -> str:
@@ -69,96 +86,100 @@ class GoogleAuthView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = GoogleAuthSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        if not settings.GOOGLE_OAUTH_CLIENT_ID:
-            return Response(
-                {"error": "GOOGLE_OAUTH_CLIENT_ID is not configured on backend."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-        token = serializer.validated_data["id_token"]
-
         try:
-            payload = google_id_token.verify_oauth2_token(
-                token,
-                google_requests.Request(),
-                settings.GOOGLE_OAUTH_CLIENT_ID,
-            )
-        except Exception:
-            return Response(
-                {"error": "Invalid Google token."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            serializer = GoogleAuthSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
 
-        email = payload.get("email")
-        if not email:
-            return Response(
-                {"error": "Google account has no email."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        user_model = get_user_model()
-        normalized_email = str(email).strip().lower()
-        username = normalized_email[:150]
-        first_name = str(payload.get("given_name", ""))[:150]
-        last_name = str(payload.get("family_name", ""))[:150]
-
-        try:
-            user, created = user_model.objects.get_or_create(
-                username=username,
-                defaults={
-                    "email": normalized_email,
-                    "first_name": first_name,
-                    "last_name": last_name,
-                },
-            )
-        except IntegrityError:
-            user = user_model.objects.filter(username=username).first()
-            if user is None:
-                logger.exception("Google auth user creation failed for email=%s", normalized_email)
-                return Response(
-                    {"error": "Failed to create user account."},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            if not settings.GOOGLE_OAUTH_CLIENT_ID:
+                return _auth_error(
+                    "GOOGLE_OAUTH_CLIENT_ID is not configured on backend.",
+                    status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
-            created = False
 
-        if not created:
-            changed = False
-            if user.email != normalized_email:
-                user.email = normalized_email
-                changed = True
-            if first_name and user.first_name != first_name:
-                user.first_name = first_name
-                changed = True
-            if last_name and user.last_name != last_name:
-                user.last_name = last_name
-                changed = True
-            if changed:
-                user.save(update_fields=["email", "first_name", "last_name"])
+            token = serializer.validated_data["id_token"]
 
-        try:
-            refresh = RefreshToken.for_user(user)
-        except Exception:
-            logger.exception("Google auth token generation failed for user_id=%s", user.id)
+            try:
+                payload = google_id_token.verify_oauth2_token(
+                    token,
+                    google_requests.Request(),
+                    settings.GOOGLE_OAUTH_CLIENT_ID,
+                )
+            except Exception as exc:
+                return _auth_error("Invalid Google token.", status.HTTP_400_BAD_REQUEST, str(exc))
+
+            email = payload.get("email")
+            if not email:
+                return _auth_error("Google account has no email.", status.HTTP_400_BAD_REQUEST)
+
+            user_model = get_user_model()
+            normalized_email = str(email).strip().lower()
+            username = normalized_email[:150]
+            first_name = str(payload.get("given_name", ""))[:150]
+            last_name = str(payload.get("family_name", ""))[:150]
+
+            try:
+                user, created = user_model.objects.get_or_create(
+                    username=username,
+                    defaults={
+                        "email": normalized_email,
+                        "first_name": first_name,
+                        "last_name": last_name,
+                    },
+                )
+            except IntegrityError as exc:
+                user = user_model.objects.filter(username=username).first()
+                if user is None:
+                    logger.exception("Google auth user creation failed for email=%s", normalized_email)
+                    return _auth_error(
+                        "Failed to create user account.",
+                        status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        str(exc),
+                    )
+                created = False
+
+            if not created:
+                changed = False
+                if user.email != normalized_email:
+                    user.email = normalized_email
+                    changed = True
+                if first_name and user.first_name != first_name:
+                    user.first_name = first_name
+                    changed = True
+                if last_name and user.last_name != last_name:
+                    user.last_name = last_name
+                    changed = True
+                if changed:
+                    user.save(update_fields=["email", "first_name", "last_name"])
+
+            try:
+                refresh = RefreshToken.for_user(user)
+            except Exception as exc:
+                logger.exception("Google auth token generation failed for user_id=%s", user.id)
+                return _auth_error(
+                    "Failed to generate auth token.",
+                    status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    str(exc),
+                )
+
             return Response(
-                {"error": "Failed to generate auth token."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-        return Response(
-            {
-                "access": str(refresh.access_token),
-                "refresh": str(refresh),
-                "user": {
-                    "id": user.id,
-                    "email": user.email,
-                    "name": f"{user.first_name} {user.last_name}".strip() or user.username,
+                {
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
+                    "user": {
+                        "id": user.id,
+                        "email": user.email,
+                        "name": f"{user.first_name} {user.last_name}".strip() or user.username,
+                    },
                 },
-            },
-            status=status.HTTP_200_OK,
-        )
+                status=status.HTTP_200_OK,
+            )
+        except Exception as exc:
+            logger.exception("Unhandled Google auth failure")
+            return _auth_error(
+                "Unhandled Google auth failure.",
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
+                str(exc),
+            )
 
 
 class HealthCheckView(APIView):
