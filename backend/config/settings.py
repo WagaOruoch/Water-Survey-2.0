@@ -17,6 +17,38 @@ API_PROFILING_ENABLED = os.getenv("API_PROFILING_ENABLED", "false").strip().lowe
     "on",
 }
 
+CACHE_BACKEND = os.getenv("CACHE_BACKEND", "locmem").strip().lower()
+REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/1").strip()
+CACHE_IGNORE_EXCEPTIONS = os.getenv("CACHE_IGNORE_EXCEPTIONS", "true").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
+
+if CACHE_BACKEND == "redis":
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                "IGNORE_EXCEPTIONS": CACHE_IGNORE_EXCEPTIONS,
+            },
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "water-survey-local-cache",
+        }
+    }
+
+ANALYTICS_SUMMARY_CACHE_TTL = int(os.getenv("ANALYTICS_SUMMARY_CACHE_TTL", "120"))
+DASHBOARD_SUMMARY_CACHE_TTL = int(os.getenv("DASHBOARD_SUMMARY_CACHE_TTL", "60"))
+DASHBOARD_RECENT_CACHE_TTL = int(os.getenv("DASHBOARD_RECENT_CACHE_TTL", "30"))
+
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 

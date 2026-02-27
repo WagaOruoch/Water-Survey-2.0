@@ -41,10 +41,24 @@ DB_HOST=localhost
 DB_PORT=5432
 GOOGLE_OAUTH_CLIENT_ID=replace-me
 
+# Cache backend (locmem or redis)
+CACHE_BACKEND=locmem
+REDIS_URL=redis://127.0.0.1:6379/1
+ANALYTICS_SUMMARY_CACHE_TTL=120
+DASHBOARD_SUMMARY_CACHE_TTL=60
+DASHBOARD_RECENT_CACHE_TTL=30
+
 # Optional Cloudinary image hosting
 CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
+```
+
+To enable Redis-backed caching, set:
+
+```env
+CACHE_BACKEND=redis
+REDIS_URL=redis://127.0.0.1:6379/1
 ```
 
 Backend runs on `http://localhost:8000`.

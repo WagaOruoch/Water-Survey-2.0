@@ -1,11 +1,14 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from datetime import datetime, timedelta
 from django.db.models import Count, Q
 from django.db.models.functions import ExtractHour, TruncDate
 from django.http import HttpResponse
 from django.utils import timezone
 import csv
+import hashlib
+import json
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token as google_id_token
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -21,6 +24,40 @@ from .serializers import (
     GoogleAuthSerializer,
     SurveyResponseSerializer,
 )
+
+
+def _cache_version_key(user_id: int) -> str:
+    return f"insights_cache_version:user:{user_id}"
+
+
+def _get_user_cache_version(user_id: int) -> int:
+    key = _cache_version_key(user_id)
+    version = cache.get(key)
+    if version is None:
+        cache.set(key, 1, timeout=None)
+        return 1
+
+    try:
+        return int(version)
+    except (TypeError, ValueError):
+        cache.set(key, 1, timeout=None)
+        return 1
+
+
+def _bump_user_cache_version(user_id: int) -> None:
+    key = _cache_version_key(user_id)
+    current_version = _get_user_cache_version(user_id)
+    try:
+        cache.incr(key)
+    except ValueError:
+        cache.set(key, current_version + 1, timeout=None)
+
+
+def _build_cache_key(scope: str, user_id: int, params: dict) -> str:
+    version = _get_user_cache_version(user_id)
+    params_blob = json.dumps(params, sort_keys=True, separators=(",", ":"))
+    params_hash = hashlib.sha1(params_blob.encode("utf-8")).hexdigest()
+    return f"{scope}:user:{user_id}:v:{version}:h:{params_hash}"
 
 
 class GoogleAuthView(APIView):
@@ -213,6 +250,7 @@ class SurveyResponseListCreateView(APIView):
         serializer = SurveyResponseSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(submitted_by=request.user)
+            _bump_user_cache_version(request.user.id)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -239,6 +277,11 @@ class DashboardSummaryView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        cache_key = _build_cache_key("dashboard-summary", request.user.id, {})
+        cached_payload = cache.get(cache_key)
+        if cached_payload is not None:
+            return Response(cached_payload)
+
         now = timezone.now()
         month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         week_start = now - timedelta(days=now.weekday())
@@ -304,13 +347,20 @@ class DashboardSummaryView(APIView):
             "peak_survey_time": peak_survey_time,
         }
         serializer = DashboardSummarySerializer(payload)
-        return Response(serializer.data)
+        response_payload = serializer.data
+        cache.set(cache_key, response_payload, timeout=settings.DASHBOARD_SUMMARY_CACHE_TTL)
+        return Response(response_payload)
 
 
 class DashboardRecentActivityView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        cache_key = _build_cache_key("dashboard-recent", request.user.id, {})
+        cached_payload = cache.get(cache_key)
+        if cached_payload is not None:
+            return Response(cached_payload)
+
         responses = SurveyResponse.objects.filter(submitted_by=request.user)[:5]
         payload = [
             {
@@ -323,7 +373,9 @@ class DashboardRecentActivityView(APIView):
             for response in responses
         ]
         serializer = DashboardRecentActivityItemSerializer(payload, many=True)
-        return Response(serializer.data)
+        response_payload = serializer.data
+        cache.set(cache_key, response_payload, timeout=settings.DASHBOARD_RECENT_CACHE_TTL)
+        return Response(response_payload)
 
 
 class SurveyResponseExportCsvView(APIView):
@@ -441,6 +493,19 @@ class AnalyticsSummaryView(APIView):
                 {"error": "start_date must be less than or equal to end_date."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        cache_key = _build_cache_key(
+            "analytics-summary",
+            request.user.id,
+            {
+                "start_date": start_date.isoformat(),
+                "end_date": end_date.isoformat(),
+                "site_name": site_name,
+            },
+        )
+        cached_payload = cache.get(cache_key)
+        if cached_payload is not None:
+            return Response(cached_payload)
 
         current_start_dt = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
         current_end_dt = timezone.make_aware(datetime.combine(end_date + timedelta(days=1), datetime.min.time()))
@@ -575,4 +640,5 @@ class AnalyticsSummaryView(APIView):
             },
         }
 
+        cache.set(cache_key, payload, timeout=settings.ANALYTICS_SUMMARY_CACHE_TTL)
         return Response(payload)
