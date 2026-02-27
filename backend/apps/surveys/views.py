@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
+from django.db import IntegrityError
 from datetime import datetime, timedelta
 from django.db.models import Count, Q
 from django.db.models.functions import ExtractHour, TruncDate
@@ -9,6 +10,7 @@ from django.utils import timezone
 import csv
 import hashlib
 import json
+import logging
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token as google_id_token
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -24,6 +26,9 @@ from .serializers import (
     GoogleAuthSerializer,
     SurveyResponseSerializer,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 def _cache_version_key(user_id: int) -> str:
@@ -95,22 +100,35 @@ class GoogleAuthView(APIView):
             )
 
         user_model = get_user_model()
-        user, created = user_model.objects.get_or_create(
-            username=email,
-            defaults={
-                "email": email,
-                "first_name": payload.get("given_name", ""),
-                "last_name": payload.get("family_name", ""),
-            },
-        )
+        normalized_email = str(email).strip().lower()
+        username = normalized_email[:150]
+        first_name = str(payload.get("given_name", ""))[:150]
+        last_name = str(payload.get("family_name", ""))[:150]
+
+        try:
+            user, created = user_model.objects.get_or_create(
+                username=username,
+                defaults={
+                    "email": normalized_email,
+                    "first_name": first_name,
+                    "last_name": last_name,
+                },
+            )
+        except IntegrityError:
+            user = user_model.objects.filter(username=username).first()
+            if user is None:
+                logger.exception("Google auth user creation failed for email=%s", normalized_email)
+                return Response(
+                    {"error": "Failed to create user account."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+            created = False
 
         if not created:
             changed = False
-            if user.email != email:
-                user.email = email
+            if user.email != normalized_email:
+                user.email = normalized_email
                 changed = True
-            first_name = payload.get("given_name", "")
-            last_name = payload.get("family_name", "")
             if first_name and user.first_name != first_name:
                 user.first_name = first_name
                 changed = True
@@ -120,7 +138,14 @@ class GoogleAuthView(APIView):
             if changed:
                 user.save(update_fields=["email", "first_name", "last_name"])
 
-        refresh = RefreshToken.for_user(user)
+        try:
+            refresh = RefreshToken.for_user(user)
+        except Exception:
+            logger.exception("Google auth token generation failed for user_id=%s", user.id)
+            return Response(
+                {"error": "Failed to generate auth token."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         return Response(
             {
