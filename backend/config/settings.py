@@ -10,6 +10,13 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = True
 
+API_PROFILING_ENABLED = os.getenv("API_PROFILING_ENABLED", "false").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
+
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 
@@ -39,11 +46,18 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "apps.surveys.middleware.ApiPerformanceMiddleware",
 ]
 
 # Allow requests from the Next.js dev server
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+]
+
+CORS_EXPOSE_HEADERS = [
+    "X-Response-Time-ms",
+    "X-DB-Query-Count",
+    "X-DB-Time-ms",
 ]
 
 GOOGLE_OAUTH_CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "")

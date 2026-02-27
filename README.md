@@ -116,6 +116,67 @@ Base prefix: `/api/`
 - `GET /dashboard/recent/`
 - `GET /analytics/summary/`
 
+## API Performance Testing
+
+You can profile API latency and rank slow endpoints directly from Django.
+
+### 1) Enable per-request profiling headers
+
+Set in `backend/.env`:
+
+```env
+API_PROFILING_ENABLED=true
+```
+
+Then restart backend. API responses include:
+
+- `X-Response-Time-ms` — total backend request time
+- `X-DB-Query-Count` — SQL queries executed (DEBUG mode)
+- `X-DB-Time-ms` — cumulative SQL time in ms (DEBUG mode)
+
+### 2) Run repeatable API benchmarks
+
+From `backend/`:
+
+```bash
+python manage.py benchmark_apis --preset load --runs 20 --warmup 3
+```
+
+From project root (PowerShell, one command with timestamped reports):
+
+```powershell
+.\backend\scripts\run_api_perf.ps1 -Preset load -Runs 20 -Warmup 3
+```
+
+Optional flags:
+
+- `--preset smoke|load` (`smoke` is lighter; `load` includes heavier endpoints)
+- `--endpoint /api/analytics/summary/?start_date=2026-01-01&end_date=2026-01-31` (repeatable)
+- `--email you@example.com` (pick specific user data)
+- `--fail-on-error` (stop on first HTTP 4xx/5xx)
+- `--output-json backend/perf-reports/latest.json`
+- `--output-csv backend/perf-reports/latest.csv`
+
+Output is sorted slowest-first and includes average, median, p95, min/max, status codes, and DB query/time averages (when profiling headers are enabled).
+
+### How to interpret slowness quickly
+
+- High `avg_db_queries` → likely N+1/extra ORM work; reduce queries, prefetch/select related.
+- High `avg_db_ms` but low query count → expensive query; add indexes, tighten filters, reduce scans.
+- High response time but low DB time → Python serialization/business logic overhead; optimize processing and payload size.
+
+### Frontend Lighthouse (production mode)
+
+Run Lighthouse against production frontend build for reliable metrics:
+
+```bash
+cd frontend
+npm run build
+npm run start
+```
+
+Then run Lighthouse against `http://localhost:3000/app/analytics` (Incognito, extensions disabled recommended).
+
 ## Responses Query Parameters
 
 Supported on `GET /responses/` and CSV export:

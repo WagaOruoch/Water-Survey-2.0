@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from datetime import datetime, timedelta
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.db.models.functions import ExtractHour, TruncDate
 from django.http import HttpResponse
 from django.utils import timezone
@@ -246,11 +246,17 @@ class DashboardSummaryView(APIView):
 
         responses = SurveyResponse.objects.filter(submitted_by=request.user)
 
-        total_surveys = responses.count()
-        surveys_this_month = responses.filter(submitted_at__gte=month_start).count()
-        surveys_this_week = responses.filter(submitted_at__gte=week_start).count()
+        summary_counts = responses.aggregate(
+            total_surveys=Count("id"),
+            surveys_this_month=Count("id", filter=Q(submitted_at__gte=month_start)),
+            surveys_this_week=Count("id", filter=Q(submitted_at__gte=week_start)),
+            staffed_count=Count("id", filter=Q(is_staffed="yes")),
+        )
 
-        staffed_count = responses.filter(is_staffed="yes").count()
+        total_surveys = summary_counts["total_surveys"]
+        surveys_this_month = summary_counts["surveys_this_month"]
+        surveys_this_week = summary_counts["surveys_this_week"]
+        staffed_count = summary_counts["staffed_count"]
         staffing_rate = round((staffed_count / total_surveys) * 100, 2) if total_surveys else 0.0
 
         top_source_row = (
@@ -458,20 +464,31 @@ class AnalyticsSummaryView(APIView):
             submitted_at__lt=previous_end_dt,
         )
 
-        total_submissions = current_queryset.count()
-        previous_submissions = previous_queryset.count()
+        current_counts = current_queryset.aggregate(
+            total_submissions=Count("id"),
+            staffed_denominator=Count("id", filter=Q(is_staffed__in=["yes", "no"])),
+            staffed_numerator=Count("id", filter=Q(is_staffed="yes")),
+            treated_denominator=Count("id", filter=Q(water_is_treated__in=["yes", "no"])),
+            treated_numerator=Count("id", filter=Q(water_is_treated="yes")),
+            drinking_denominator=Count("id", filter=Q(used_for_drinking__in=["yes", "no"])),
+            drinking_numerator=Count("id", filter=Q(used_for_drinking="yes")),
+        )
+        previous_counts = previous_queryset.aggregate(previous_submissions=Count("id"))
+
+        total_submissions = current_counts["total_submissions"]
+        previous_submissions = previous_counts["previous_submissions"]
         submissions_delta = total_submissions - previous_submissions
 
-        staffed_denominator = current_queryset.filter(is_staffed__in=["yes", "no"]).count()
-        staffed_numerator = current_queryset.filter(is_staffed="yes").count()
+        staffed_denominator = current_counts["staffed_denominator"]
+        staffed_numerator = current_counts["staffed_numerator"]
         staffed_pct = round((staffed_numerator / staffed_denominator) * 100, 2) if staffed_denominator else 0.0
 
-        treated_denominator = current_queryset.filter(water_is_treated__in=["yes", "no"]).count()
-        treated_numerator = current_queryset.filter(water_is_treated="yes").count()
+        treated_denominator = current_counts["treated_denominator"]
+        treated_numerator = current_counts["treated_numerator"]
         treated_pct = round((treated_numerator / treated_denominator) * 100, 2) if treated_denominator else 0.0
 
-        drinking_denominator = current_queryset.filter(used_for_drinking__in=["yes", "no"]).count()
-        drinking_numerator = current_queryset.filter(used_for_drinking="yes").count()
+        drinking_denominator = current_counts["drinking_denominator"]
+        drinking_numerator = current_counts["drinking_numerator"]
         drinking_pct = round((drinking_numerator / drinking_denominator) * 100, 2) if drinking_denominator else 0.0
 
         day_bucket_counts = {

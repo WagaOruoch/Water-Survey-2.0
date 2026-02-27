@@ -269,30 +269,48 @@ export default function AnalyticsPage() {
 
       <section className="rounded-lg bg-white p-4 shadow-sm">
         <div className="grid gap-3 md:grid-cols-4">
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => handleStartDateChange(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-          />
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => handleEndDateChange(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-          />
-          <select
-            value={siteName}
-            onChange={(e) => setSiteName(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-          >
-            <option value="">All sites</option>
-            {siteOptions.map((site) => (
-              <option key={site} value={site}>
-                {site}
-              </option>
-            ))}
-          </select>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="analytics-start-date" className="text-xs font-medium text-gray-600">
+              Start date
+            </label>
+            <input
+              id="analytics-start-date"
+              type="date"
+              value={startDate}
+              onChange={(e) => handleStartDateChange(e.target.value)}
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="analytics-end-date" className="text-xs font-medium text-gray-600">
+              End date
+            </label>
+            <input
+              id="analytics-end-date"
+              type="date"
+              value={endDate}
+              onChange={(e) => handleEndDateChange(e.target.value)}
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="analytics-site-filter" className="text-xs font-medium text-gray-600">
+              Site
+            </label>
+            <select
+              id="analytics-site-filter"
+              value={siteName}
+              onChange={(e) => setSiteName(e.target.value)}
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            >
+              <option value="">All sites</option>
+              {siteOptions.map((site) => (
+                <option key={site} value={site}>
+                  {site}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">
             {startDate} to {endDate} · {activeRangeLabel}
           </div>
@@ -312,7 +330,7 @@ export default function AnalyticsPage() {
         >
           <p className="text-sm font-medium text-gray-500">Total Submissions</p>
           <p className="mt-2 text-3xl font-bold text-gray-900">{loading ? "..." : totalSubmissions}</p>
-          <p className={`mt-1 text-xs ${totalDelta >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+          <p className={`mt-1 text-xs ${totalDelta >= 0 ? "text-emerald-700" : "text-red-700"}`}>
             {loading ? "" : `${totalDelta >= 0 ? "+" : ""}${totalDelta} vs previous period`}
           </p>
         </Link>
@@ -414,7 +432,7 @@ export default function AnalyticsPage() {
                   <Link
                     key={item.date}
                     href={`/app/responses?${responsesBaseParams}${siteParam}&submitted_after=${item.date}&submitted_before=${item.date}`}
-                    className="group relative flex h-full min-w-[18px] flex-1 flex-col justify-end"
+                    className="group relative flex h-full min-w-[24px] flex-1 flex-col justify-end"
                     title={`${shortDateLabel(item.date)}: ${item.count}`}
                   >
                     <div

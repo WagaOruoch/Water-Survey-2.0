@@ -19,10 +19,10 @@ export default function TopNav() {
 
       <div className="flex items-center gap-4">
         <div className="px-1 py-1 text-right leading-tight">
-          <p className="text-sm font-semibold text-white">
+          <p className="text-sm font-semibold text-gray-900">
             {authUser?.name || authUser?.email || "[My email]"}
           </p>
-          <p className="text-xs text-white/80">{authUser?.email ?? "[My email]"}</p>
+          <p className="text-xs text-gray-700">{authUser?.email ?? "[My email]"}</p>
         </div>
 
         <button
