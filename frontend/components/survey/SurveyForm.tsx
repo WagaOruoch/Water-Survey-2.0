@@ -1,9 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FieldId, FieldValue, FormValues } from "@/types/survey";
 import { computeFlags, isSectionVisible, clearHiddenFields } from "@/lib/formEngine";
-import { submitSurveyResponse } from "@/lib/api";
+import { postSyncTelemetry, submitSurveyResponse } from "@/lib/api";
+import {
+  createClientSubmissionId,
+  enqueueSubmission,
+  flushOutbox,
+  getOutboxCount,
+} from "@/lib/offlineOutbox";
 import { Background, StaffInterview, SiteObservation } from "./sections";
 
 // ─────────────────────────────────────────────────────────────
@@ -54,7 +60,7 @@ const DEPENDENT_CLEAR_MAP: Partial<Record<FieldId, FieldId[]>> = {
   used_for_drinking: ["water_access_method"],
 };
 
-type Status = "idle" | "loading" | "success" | "error";
+type Status = "idle" | "loading" | "success" | "error" | "queued";
 
 export default function SurveyForm() {
   const [values, setValues]           = useState<FormValues>({});
@@ -62,8 +68,80 @@ export default function SurveyForm() {
   const [submissionId, setSubmissionId] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [queuedCount, setQueuedCount] = useState(0);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const syncInProgressRef = useRef(false);
 
   const flags = useMemo(() => computeFlags(values), [values]);
+
+  function isNetworkSubmissionError(error: unknown): boolean {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      return true;
+    }
+
+    if (typeof error === "object" && error !== null && "response" in error) {
+      const response = (error as { response?: unknown }).response;
+      return !response;
+    }
+
+    return false;
+  }
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function refreshQueueCount() {
+      const count = await getOutboxCount();
+      if (isMounted) setQueuedCount(count);
+    }
+
+    async function trySync(event: string) {
+      if (!navigator.onLine || syncInProgressRef.current) return;
+      syncInProgressRef.current = true;
+      setIsSyncing(true);
+
+      try {
+        const queuedBefore = await getOutboxCount();
+        const result = await flushOutbox();
+        if (isMounted) setQueuedCount(result.remaining);
+
+        if (queuedBefore > 0 || result.synced > 0 || result.failed > 0) {
+          await postSyncTelemetry({
+            event,
+            queued: queuedBefore,
+            synced: result.synced,
+            failed: result.failed,
+          });
+        }
+      } catch {
+      } finally {
+        syncInProgressRef.current = false;
+        if (isMounted) setIsSyncing(false);
+      }
+    }
+
+    refreshQueueCount();
+    trySync("mount");
+
+    const onOnline = () => {
+      void trySync("online");
+    };
+
+    const onVisibility = () => {
+      if (!document.hidden) {
+        void trySync("visibility");
+      }
+    };
+
+    window.addEventListener("online", onOnline);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("online", onOnline);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, []);
 
   function handleChange(fieldId: FieldId, value: FieldValue) {
     // Clear validation errors as the user corrects the form
@@ -130,15 +208,27 @@ export default function SurveyForm() {
 
     // 2. Strip values for any fields that are currently hidden
     const cleanedValues = clearHiddenFields(values);
+    const clientSubmissionId = createClientSubmissionId();
 
     try {
       // 3. POST to Django
-      const response = await submitSurveyResponse(cleanedValues);
+      const response = await submitSurveyResponse(cleanedValues, {
+        clientSubmissionId,
+      });
 
       // 4. Success
       setSubmissionId(response.id);
       setStatus("success");
     } catch (err: unknown) {
+      if (isNetworkSubmissionError(err)) {
+        await enqueueSubmission(cleanedValues, clientSubmissionId);
+        const count = await getOutboxCount();
+        setQueuedCount(count);
+        setStatus("queued");
+        setErrorMessage("");
+        return;
+      }
+
       // 5. Error — surface a readable message
       let message = "Submission failed. Please check your connection and try again.";
 
@@ -164,6 +254,28 @@ export default function SurveyForm() {
     setSubmissionId("");
     setErrorMessage("");
     setValidationErrors([]);
+  }
+
+  if (status === "queued") {
+    return (
+      <div className="rounded-xl border border-amber-200 bg-amber-50 px-8 py-10 text-center shadow-sm">
+        <div className="mb-3 text-4xl">⏳</div>
+        <h2 className="text-lg font-semibold text-amber-800">Saved for sync</h2>
+        <p className="mt-2 text-sm text-amber-700">
+          You appear to be offline. This survey is queued and will auto-sync when you reconnect.
+        </p>
+        <p className="mt-4 rounded-lg bg-white px-4 py-2 text-xs text-gray-600 shadow-inner">
+          Pending queued surveys: {queuedCount}
+        </p>
+        <button
+          onClick={handleReset}
+          className="mt-6 rounded-lg bg-amber-700 px-6 py-2.5 text-sm font-semibold
+                     text-white transition hover:bg-amber-800"
+        >
+          Continue surveying
+        </button>
+      </div>
+    );
   }
 
   // ── Success screen ───────────────────────────────────────
@@ -193,6 +305,14 @@ export default function SurveyForm() {
   return (
     <form onSubmit={handleSubmit} noValidate>
       <div className="flex flex-col gap-6">
+
+        {queuedCount > 0 && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            {isSyncing
+              ? `Syncing queued surveys... (${queuedCount} pending)`
+              : `${queuedCount} survey${queuedCount > 1 ? "s are" : " is"} queued for sync.`}
+          </div>
+        )}
 
         <Background values={values} flags={flags} onChange={handleChange} />
 

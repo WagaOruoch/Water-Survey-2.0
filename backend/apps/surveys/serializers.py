@@ -60,7 +60,7 @@ class SurveyResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model  = SurveyResponse
         fields = [
-            "id", "submitted_at",
+            "id", "submitted_at", "client_submission_id",
             "submitted_by_email",
             # Background
             "site_code", "site_name", "gps_location", "survey_date", "site_photo", "site_photo_url", "is_staffed",

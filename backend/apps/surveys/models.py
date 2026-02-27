@@ -7,6 +7,7 @@ from django.db import models
 class SurveyResponse(models.Model):
     id           = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     submitted_at = models.DateTimeField(auto_now_add=True)
+    client_submission_id = models.UUIDField(null=True, blank=True)
     submitted_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -96,6 +97,20 @@ class SurveyResponse(models.Model):
     class Meta:
         ordering = ["-submitted_at"]
         db_table = "survey_responses"
+        indexes = [
+            models.Index(fields=["submitted_by", "-submitted_at"]),
+            models.Index(fields=["submitted_by", "site_name", "-submitted_at"]),
+            models.Index(fields=["submitted_by", "is_staffed", "-submitted_at"]),
+            models.Index(fields=["submitted_by", "water_source_type", "-submitted_at"]),
+            models.Index(fields=["submitted_by", "water_is_treated", "-submitted_at"]),
+            models.Index(fields=["submitted_by", "used_for_drinking", "-submitted_at"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["submitted_by", "client_submission_id"],
+                name="uniq_submission_per_user_client_id",
+            )
+        ]
 
     def __str__(self):
         return f"Response {self.id} — Site {self.site_code or 'unknown'} ({self.submitted_at:%Y-%m-%d})"

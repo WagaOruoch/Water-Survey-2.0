@@ -6,6 +6,7 @@ from .views import (
     DashboardSummaryView,
     GoogleAuthView,
     HealthCheckView,
+    SyncTelemetryView,
     SurveyResponseExportCsvView,
     SurveyResponseDetailView,
     SurveyResponseListCreateView,
@@ -21,4 +22,5 @@ urlpatterns = [
     path("responses/export/csv/", SurveyResponseExportCsvView.as_view(), name="response-export-csv"),
     path("dashboard/summary/", DashboardSummaryView.as_view(), name="dashboard-summary"),
     path("dashboard/recent/", DashboardRecentActivityView.as_view(), name="dashboard-recent"),
+    path("sync/events/", SyncTelemetryView.as_view(), name="sync-events"),
 ]

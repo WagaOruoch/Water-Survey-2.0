@@ -32,6 +32,23 @@ from .serializers import (
 logger = logging.getLogger(__name__)
 
 
+def _parse_filter_date(raw_value: str, field_name: str):
+    try:
+        return datetime.strptime(raw_value, "%Y-%m-%d").date(), None
+    except ValueError:
+        return None, Response(
+            {"error": f"Invalid {field_name} date format. Use YYYY-MM-DD."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+def _safe_int(value, default: int = 0) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
 def _auth_debug_enabled() -> bool:
     return os.getenv("AUTH_DEBUG_ERRORS", "false").strip().lower() in {
         "1",
@@ -222,25 +239,21 @@ class SurveyResponseListCreateView(APIView):
 
         submitted_after = request.query_params.get("submitted_after", "").strip()
         if submitted_after:
-            try:
-                after_date = datetime.strptime(submitted_after, "%Y-%m-%d").date()
-                responses = responses.filter(submitted_at__date__gte=after_date)
-            except ValueError:
-                return Response(
-                    {"error": "Invalid submitted_after date format. Use YYYY-MM-DD."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            after_date, error_response = _parse_filter_date(submitted_after, "submitted_after")
+            if error_response:
+                return error_response
+            after_dt = timezone.make_aware(datetime.combine(after_date, datetime.min.time()))
+            responses = responses.filter(submitted_at__gte=after_dt)
 
         submitted_before = request.query_params.get("submitted_before", "").strip()
         if submitted_before:
-            try:
-                before_date = datetime.strptime(submitted_before, "%Y-%m-%d").date()
-                responses = responses.filter(submitted_at__date__lte=before_date)
-            except ValueError:
-                return Response(
-                    {"error": "Invalid submitted_before date format. Use YYYY-MM-DD."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            before_date, error_response = _parse_filter_date(submitted_before, "submitted_before")
+            if error_response:
+                return error_response
+            before_exclusive_dt = timezone.make_aware(
+                datetime.combine(before_date + timedelta(days=1), datetime.min.time())
+            )
+            responses = responses.filter(submitted_at__lt=before_exclusive_dt)
 
         period = request.query_params.get("period", "").strip().lower()
         now = timezone.now()
@@ -302,9 +315,32 @@ class SurveyResponseListCreateView(APIView):
     def post(self, request):
         serializer = SurveyResponseSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(submitted_by=request.user)
-            _bump_user_cache_version(request.user.id)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            client_submission_id = serializer.validated_data.get("client_submission_id")
+
+            if client_submission_id:
+                existing = SurveyResponse.objects.filter(
+                    submitted_by=request.user,
+                    client_submission_id=client_submission_id,
+                ).first()
+                if existing:
+                    return Response(SurveyResponseSerializer(existing).data, status=status.HTTP_200_OK)
+
+            try:
+                serializer.save(submitted_by=request.user)
+                _bump_user_cache_version(request.user.id)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except IntegrityError:
+                if client_submission_id:
+                    existing = SurveyResponse.objects.filter(
+                        submitted_by=request.user,
+                        client_submission_id=client_submission_id,
+                    ).first()
+                    if existing:
+                        return Response(
+                            SurveyResponseSerializer(existing).data,
+                            status=status.HTTP_200_OK,
+                        )
+                raise
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -459,25 +495,21 @@ class SurveyResponseExportCsvView(APIView):
 
         submitted_after = request.query_params.get("submitted_after", "").strip()
         if submitted_after:
-            try:
-                after_date = datetime.strptime(submitted_after, "%Y-%m-%d").date()
-                responses = responses.filter(submitted_at__date__gte=after_date)
-            except ValueError:
-                return Response(
-                    {"error": "Invalid submitted_after date format. Use YYYY-MM-DD."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            after_date, error_response = _parse_filter_date(submitted_after, "submitted_after")
+            if error_response:
+                return error_response
+            after_dt = timezone.make_aware(datetime.combine(after_date, datetime.min.time()))
+            responses = responses.filter(submitted_at__gte=after_dt)
 
         submitted_before = request.query_params.get("submitted_before", "").strip()
         if submitted_before:
-            try:
-                before_date = datetime.strptime(submitted_before, "%Y-%m-%d").date()
-                responses = responses.filter(submitted_at__date__lte=before_date)
-            except ValueError:
-                return Response(
-                    {"error": "Invalid submitted_before date format. Use YYYY-MM-DD."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            before_date, error_response = _parse_filter_date(submitted_before, "submitted_before")
+            if error_response:
+                return error_response
+            before_exclusive_dt = timezone.make_aware(
+                datetime.combine(before_date + timedelta(days=1), datetime.min.time())
+            )
+            responses = responses.filter(submitted_at__lt=before_exclusive_dt)
 
         period = request.query_params.get("period", "").strip().lower()
         now = timezone.now()
@@ -695,3 +727,33 @@ class AnalyticsSummaryView(APIView):
 
         cache.set(cache_key, payload, timeout=settings.ANALYTICS_SUMMARY_CACHE_TTL)
         return Response(payload)
+
+
+class SyncTelemetryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        event = str(request.data.get("event", "")).strip() or "unknown"
+        queued = _safe_int(request.data.get("queued", 0), 0)
+        synced = _safe_int(request.data.get("synced", 0), 0)
+        failed = _safe_int(request.data.get("failed", 0), 0)
+
+        logger.info(
+            "sync_event user_id=%s event=%s queued=%s synced=%s failed=%s",
+            request.user.id,
+            event,
+            queued,
+            synced,
+            failed,
+        )
+
+        return Response(
+            {
+                "ok": True,
+                "event": event,
+                "queued": queued,
+                "synced": synced,
+                "failed": failed,
+            },
+            status=status.HTTP_200_OK,
+        )

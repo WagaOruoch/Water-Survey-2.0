@@ -207,10 +207,25 @@ export async function signInWithGoogle(
 }
 
 export async function submitSurveyResponse(
-  payload: SurveySubmitPayload
+  payload: SurveySubmitPayload,
+  options: { clientSubmissionId?: string } = {}
 ): Promise<SurveySubmitResponse> {
-  const response = await api.post<SurveySubmitResponse>("/responses/", payload);
+  const response = await api.post<SurveySubmitResponse>("/responses/", {
+    ...payload,
+    ...(options.clientSubmissionId
+      ? { client_submission_id: options.clientSubmissionId }
+      : {}),
+  });
   return response.data;
+}
+
+export async function postSyncTelemetry(payload: {
+  event: string;
+  queued: number;
+  synced: number;
+  failed: number;
+}): Promise<void> {
+  await api.post("/sync/events/", payload);
 }
 
 export async function getDashboardSummary(): Promise<DashboardSummaryResponse> {
