@@ -249,8 +249,8 @@ Render provisions:
 
 Backend:
 
-- Build: `pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate --noinput`
-- Start: `gunicorn config.wsgi:application --bind 0.0.0.0:$PORT`
+- Build: `pip install -r requirements.txt && python manage.py collectstatic --noinput`
+- Start: `python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT`
 
 Frontend:
 
