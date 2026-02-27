@@ -136,6 +136,13 @@ class GoogleAuthView(APIView):
         )
 
 
+class HealthCheckView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response({"status": "ok"}, status=status.HTTP_200_OK)
+
+
 class SurveyResponseListCreateView(APIView):
     """
     GET  /api/responses/  — list all submitted responses

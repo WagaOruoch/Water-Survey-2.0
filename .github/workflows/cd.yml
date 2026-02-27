@@ -1,0 +1,32 @@
+name: CD
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+jobs:
+  deploy-frontend:
+    name: Deploy frontend
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main') }}
+    env:
+      FRONTEND_DEPLOY_HOOK_URL: ${{ secrets.FRONTEND_DEPLOY_HOOK_URL }}
+    steps:
+      - name: Trigger frontend deploy hook
+        if: ${{ env.FRONTEND_DEPLOY_HOOK_URL != '' }}
+        run: |
+          curl -X POST "$FRONTEND_DEPLOY_HOOK_URL"
+
+  deploy-backend:
+    name: Deploy backend
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main') }}
+    env:
+      BACKEND_DEPLOY_HOOK_URL: ${{ secrets.BACKEND_DEPLOY_HOOK_URL }}
+    steps:
+      - name: Trigger backend deploy hook
+        if: ${{ env.BACKEND_DEPLOY_HOOK_URL != '' }}
+        run: |
+          curl -X POST "$BACKEND_DEPLOY_HOOK_URL"

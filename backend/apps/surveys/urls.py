@@ -5,12 +5,14 @@ from .views import (
     DashboardRecentActivityView,
     DashboardSummaryView,
     GoogleAuthView,
+    HealthCheckView,
     SurveyResponseExportCsvView,
     SurveyResponseDetailView,
     SurveyResponseListCreateView,
 )
 
 urlpatterns = [
+    path("health/", HealthCheckView.as_view(), name="health"),
     path("auth/google/", GoogleAuthView.as_view(), name="auth-google"),
     path("auth/refresh/", TokenRefreshView.as_view(), name="auth-refresh"),
     path("analytics/summary/", AnalyticsSummaryView.as_view(), name="analytics-summary"),

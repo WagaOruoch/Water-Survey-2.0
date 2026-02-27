@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import dj_database_url
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,23 +9,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-DEBUG = True
+def _env_bool(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
 
-API_PROFILING_ENABLED = os.getenv("API_PROFILING_ENABLED", "false").strip().lower() in {
-    "1",
-    "true",
-    "yes",
-    "on",
-}
+
+def _env_list(name: str, default: list[str]) -> list[str]:
+    value = os.getenv(name, "")
+    if not value.strip():
+        return default
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+DEBUG = _env_bool("DEBUG", True)
+
+API_PROFILING_ENABLED = _env_bool("API_PROFILING_ENABLED", False)
 
 CACHE_BACKEND = os.getenv("CACHE_BACKEND", "locmem").strip().lower()
 REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/1").strip()
-CACHE_IGNORE_EXCEPTIONS = os.getenv("CACHE_IGNORE_EXCEPTIONS", "true").strip().lower() in {
-    "1",
-    "true",
-    "yes",
-    "on",
-}
+CACHE_IGNORE_EXCEPTIONS = _env_bool("CACHE_IGNORE_EXCEPTIONS", True)
 
 if CACHE_BACKEND == "redis":
     CACHES = {
@@ -49,7 +54,7 @@ ANALYTICS_SUMMARY_CACHE_TTL = int(os.getenv("ANALYTICS_SUMMARY_CACHE_TTL", "120"
 DASHBOARD_SUMMARY_CACHE_TTL = int(os.getenv("DASHBOARD_SUMMARY_CACHE_TTL", "60"))
 DASHBOARD_RECENT_CACHE_TTL = int(os.getenv("DASHBOARD_RECENT_CACHE_TTL", "30"))
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = _env_list("ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
 
 
 # ──────────────────────────────────────────────
@@ -70,8 +75,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",          # must be first
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -81,10 +87,15 @@ MIDDLEWARE = [
     "apps.surveys.middleware.ApiPerformanceMiddleware",
 ]
 
-# Allow requests from the Next.js dev server
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-]
+CORS_ALLOWED_ORIGINS = _env_list("CORS_ALLOWED_ORIGINS", ["http://localhost:3000"])
+CSRF_TRUSTED_ORIGINS = _env_list("CSRF_TRUSTED_ORIGINS", ["http://localhost:3000"])
+
+frontend_url = os.getenv("FRONTEND_URL", "").strip()
+if frontend_url:
+    if frontend_url not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(frontend_url)
+    if frontend_url not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(frontend_url)
 
 CORS_EXPOSE_HEADERS = [
     "X-Response-Time-ms",
@@ -117,16 +128,27 @@ WSGI_APPLICATION = "config.wsgi.application"
 # ──────────────────────────────────────────────
 # Database — PostgreSQL
 # ──────────────────────────────────────────────
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME", "water_survey"),
-        "USER": os.getenv("DB_USER", "postgres"),
-        "PASSWORD": os.getenv("DB_PASSWORD", ""),
-        "HOST": os.getenv("DB_HOST", "localhost"),
-        "PORT": os.getenv("DB_PORT", "5432"),
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=not DEBUG,
+        )
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DB_NAME", "water_survey"),
+            "USER": os.getenv("DB_USER", "postgres"),
+            "PASSWORD": os.getenv("DB_PASSWORD", ""),
+            "HOST": os.getenv("DB_HOST", "localhost"),
+            "PORT": os.getenv("DB_PORT", "5432"),
+        }
+    }
 
 
 # ──────────────────────────────────────────────
@@ -152,7 +174,9 @@ USE_TZ = True
 # ──────────────────────────────────────────────
 # Static files
 # ──────────────────────────────────────────────
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # ──────────────────────────────────────────────
 # Media files (local fallback)
@@ -182,6 +206,11 @@ if CLOUDINARY_ENABLED:
     )
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = _env_bool("SECURE_SSL_REDIRECT", not DEBUG)
+SESSION_COOKIE_SECURE = _env_bool("SESSION_COOKIE_SECURE", not DEBUG)
+CSRF_COOKIE_SECURE = _env_bool("CSRF_COOKIE_SECURE", not DEBUG)
 
 
 # ──────────────────────────────────────────────
