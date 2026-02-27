@@ -11,8 +11,20 @@ import {
   SurveySubmitResponse,
 } from "@/types/survey";
 
+function normalizeApiBaseUrl(value: string | undefined): string {
+  const fallback = "http://localhost:8000/api";
+  const raw = (value ?? "").trim();
+  if (!raw) return fallback;
+
+  const withoutTrailingSlash = raw.replace(/\/+$/, "");
+  if (withoutTrailingSlash.endsWith("/api")) {
+    return withoutTrailingSlash;
+  }
+  return `${withoutTrailingSlash}/api`;
+}
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: normalizeApiBaseUrl(process.env.NEXT_PUBLIC_API_URL),
   headers: {
     "Content-Type": "application/json",
   },
