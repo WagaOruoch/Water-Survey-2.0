@@ -121,6 +121,20 @@ class SurveyResponseSerializer(serializers.ModelSerializer):
             )
         return attrs
 
+    def validate_site_code(self, value):
+        if value is None:
+            return value
+        if value < 100000 or value > 999999:
+            raise serializers.ValidationError("Site code must be a 6 digit number.")
+        return value
+
+    def validate_months_at_site(self, value):
+        if value is None:
+            return value
+        if value < 1 or value > 11:
+            raise serializers.ValidationError("Months at site must be between 1 and 11.")
+        return value
+
     def create(self, validated_data):
         site_photo_data = validated_data.pop("site_photo", None)
         months     = validated_data.pop("dry_months",        None)

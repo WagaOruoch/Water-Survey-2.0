@@ -27,7 +27,8 @@ export default function Background({ values, onChange }: Props) {
         label="Enter site code"
         value={(values.site_code as number) ?? null}
         onChange={(v) => onChange("site_code", v)}
-        min={0}
+        min={100000}
+        max={999999}
         required
       />
 

@@ -131,10 +131,11 @@ export default function StaffInterview({ values, flags, onChange }: Props) {
       {isFieldVisible("months_at_site", values, flags) && (
         <IntegerField
           id="months_at_site"
-          label="How many months have you worked here? (0–11)"
+          label="How many months have you worked here? (1–11)"
           value={(values.months_at_site as number) ?? null}
           onChange={(v) => onChange("months_at_site", v)}
-          min={0}
+          min={1}
+          max={11}
         />
       )}
 

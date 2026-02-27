@@ -1,5 +1,6 @@
 import uuid
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
@@ -15,7 +16,11 @@ class SurveyResponse(models.Model):
     )
 
     # ── Background ───────────────────────────────────────────
-    site_code    = models.IntegerField(null=True, blank=True)
+    site_code    = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(100000), MaxValueValidator(999999)],
+    )
     site_name    = models.CharField(max_length=50,  null=True, blank=True)
     gps_location = models.CharField(max_length=100, null=True, blank=True)
     survey_date  = models.DateField(null=True, blank=True)
@@ -27,7 +32,11 @@ class SurveyResponse(models.Model):
     staff_role        = models.CharField(max_length=50,  null=True, blank=True)
     staff_role_other  = models.CharField(max_length=200, null=True, blank=True)
     years_at_site     = models.IntegerField(null=True, blank=True)
-    months_at_site    = models.IntegerField(null=True, blank=True)
+    months_at_site    = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(11)],
+    )
     other_staff_count = models.IntegerField(null=True, blank=True)
     site_age          = models.CharField(max_length=50,  null=True, blank=True)
     has_dry_season    = models.CharField(max_length=3,   null=True, blank=True)

@@ -6,6 +6,7 @@ interface IntegerFieldProps {
   value: number | null;
   onChange: (value: number | null) => void;
   min?: number;
+  max?: number;
   required?: boolean;
 }
 
@@ -15,6 +16,7 @@ export default function IntegerField({
   value,
   onChange,
   min,
+  max,
   required,
 }: IntegerFieldProps) {
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -37,6 +39,7 @@ export default function IntegerField({
         value={value ?? ""}
         onChange={handleChange}
         min={min}
+        max={max}
         step={1}
         className="w-40 rounded-md border border-gray-300 px-3 py-2 text-sm
                    shadow-sm outline-none transition
