@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { clearSessionTokens, getAuthUser } from "@/lib/api";
+import SurveyCorpMark from "@/components/branding/SurveyCorpMark";
 
 export default function TopNav() {
   const router = useRouter();
@@ -15,7 +16,13 @@ export default function TopNav() {
 
   return (
     <nav className="flex min-h-16 items-center justify-between border-b border-white/10 bg-slate-900/25 px-8 text-white backdrop-blur-sm">
-      <h1 className="text-xl font-semibold">Water Survey System</h1>
+      <div>
+        <div className="flex items-center gap-2.5">
+          <SurveyCorpMark size="sm" />
+          <h1 className="text-4 font-semibold leading-none text-white sm:text-xl">Survey Corp</h1>
+        </div>
+        <p className="mt-1 text-xs text-blue-100/95">Survey Operations Platform</p>
+      </div>
 
       <div className="flex items-center gap-4">
         <div className="px-1 py-1 text-right leading-tight">

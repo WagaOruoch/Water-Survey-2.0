@@ -39,20 +39,20 @@ function describeArc(
   return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`;
 }
 
-const SITE_PALETTE = ["#2563eb", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444", "#06b6d4", "#84cc16"];
+const SITE_PALETTE = ["#2563eb", "#0ea5e9", "#f59e0b", "#8b5cf6", "#f97316", "#06b6d4", "#a78bfa"];
 
 const SOURCE_PALETTE: Record<string, string> = {
   piped: "#2563eb",
-  well: "#16a34a",
+  well: "#0ea5e9",
   spring: "#f59e0b",
   packaged: "#8b5cf6",
-  other_sources: "#ef4444",
+  other_sources: "#f97316",
 };
 
 export default function AnalyticsPage() {
   const today = new Date();
   const defaultStart = new Date(today);
-  defaultStart.setDate(today.getDate() - 29);
+  defaultStart.setDate(today.getDate() - 6);
 
   const [startDate, setStartDate] = useState(toIsoDate(defaultStart));
   const [endDate, setEndDate] = useState(toIsoDate(today));
@@ -60,8 +60,8 @@ export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsSummaryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [trendMode, setTrendMode] = useState<"bar" | "line">("bar");
-  const [activePreset, setActivePreset] = useState<7 | 30 | 90 | "custom">(30);
+  const [trendMode, setTrendMode] = useState<"bar" | "line">("line");
+  const [activePreset, setActivePreset] = useState<7 | 30 | 90 | "custom">(7);
 
   useEffect(() => {
     let isMounted = true;
@@ -454,19 +454,19 @@ export default function AnalyticsPage() {
                 <polyline
                   fill="none"
                   stroke="#06b6d4"
-                  strokeWidth="2.5"
+                  strokeWidth="0.4"
                   points={trendPolylinePoints}
                 />
-                {trendPlotPoints.map((point) => (
-                  <circle
-                    key={point.date}
-                    cx={point.x}
-                    cy={point.y}
-                    r="1.3"
-                    fill="#22d3ee"
-                  />
-                ))}
               </svg>
+
+              {/* Overlay small round dots using percentage positioning so they stay circular */}
+              {trendPlotPoints.map((point) => (
+                <span
+                  key={point.date}
+                  className="absolute h-[5px] w-[5px] rounded-full bg-cyan-300"
+                  style={{ left: `${point.x}%`, top: `calc(${point.y}% + 8px)`, transform: "translate(-50%, -50%)" }}
+                />
+              ))}
 
               <div className="pointer-events-none absolute inset-x-1 bottom-0 flex justify-between">
                 {trendPlotPoints
@@ -607,7 +607,7 @@ export default function AnalyticsPage() {
             {
               label: "Treated",
               value: data?.service_quality.treated_pct ?? 0,
-              color: "bg-emerald-600",
+              color: "bg-violet-500",
               href: `/app/responses?${responsesBaseParams}${siteParam}&water_is_treated=yes`,
             },
             {

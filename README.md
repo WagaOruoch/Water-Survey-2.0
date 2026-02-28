@@ -92,9 +92,17 @@ Frontend runs on `http://localhost:3000`.
 
 ## Implemented Features
 
+### UI / Visual Design
+- Glass-translucent dark theme across all pages using a shared background image with semi-transparent gradient overlays.
+- Shared `SurveyCorpMark` geometric logo component (blue square, green circle, cyan rounded-square) used in the landing page, login page, and app TopNav.
+- Consistent brand identity: "Survey Corp — Survey Operations Platform" in nav bars.
+- Colorblind-accessible chart palettes (no red/green — uses orange, sky-blue, violet instead).
+- Dark-themed native dropdowns, date pickers, and autofill overrides.
+
 ### Surveys
 - Full dynamic form with conditional sections/fields.
 - Client validation and hidden-field clearing.
+- Live inline validation for `site_code` (must be 6-digit: 100000–999999) and `months_at_site` (1–11).
 - Authenticated submission to backend.
 
 ### Responses (Operational)
@@ -109,12 +117,12 @@ Frontend runs on `http://localhost:3000`.
 - Insight links deep-linking to filtered `Responses`.
 
 ### Analytics v1 (Interpretation)
-- Date-range + site filter.
+- Date-range + site filter (defaults to last 7 days).
 - KPI cards (submissions, staffed %, treated %).
-- Submissions trend chart with `Bar | Line` toggle.
+- Submissions trend chart with `Bar | Line` toggle (defaults to Line).
 - Water source distribution chart.
 - Site coverage donut chart.
-- Service quality indicators.
+- Service quality indicators (blue / violet / amber bars).
 - Drill-through links to filtered `Responses`.
 
 ## API Endpoints
@@ -335,6 +343,8 @@ frontend/
       analytics/page.tsx
   components/
     auth/
+    branding/
+      SurveyCorpMark.tsx
     navigation/
     survey/
   lib/api.ts
