@@ -100,26 +100,26 @@ export default function GoogleLoginCard({
   }, [googleClientId, onSuccessPath, router]);
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-      <h2 className="text-xl font-semibold text-gray-900">Log in to Survey Corp</h2>
-      <p className="mt-2 text-sm text-gray-600">
+    <div className="rounded-2xl border border-white/25 bg-slate-900/25 p-8 text-center shadow-xl backdrop-blur-sm">
+      <h2 className="text-4 font-semibold text-white sm:text-3xl">Log in to Survey Corp</h2>
+      <p className="mt-2 text-sm text-blue-100/90">
         Sign in with Google to access the dashboard and survey workspace.
       </p>
 
-      <div id="google-signin-button" className="mt-6" />
+      <div id="google-signin-button" className="mt-6 flex justify-center" />
 
       {isSubmitting && (
-        <p className="mt-4 text-sm text-gray-600">Completing sign-in...</p>
+        <p className="mt-4 text-sm text-blue-100">Completing sign-in...</p>
       )}
 
       {error && (
-        <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="mt-4 rounded-md border border-red-200/50 bg-red-500/15 px-3 py-2 text-sm text-red-100">
           {error}
         </p>
       )}
 
       {!error && configError && (
-        <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="mt-4 rounded-md border border-red-200/50 bg-red-500/15 px-3 py-2 text-sm text-red-100">
           {configError}
         </p>
       )}

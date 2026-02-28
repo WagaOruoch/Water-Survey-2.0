@@ -7,6 +7,9 @@ interface Props {
   values: FormValues;
   flags: ComputedFlags;
   onChange: (fieldId: FieldId, value: FieldValue) => void;
+  fieldErrors?: {
+    months_at_site?: string;
+  };
 }
 
 const YES_NO = [
@@ -76,7 +79,7 @@ function SubHeader({ label }: { label: string }) {
   );
 }
 
-export default function StaffInterview({ values, flags, onChange }: Props) {
+export default function StaffInterview({ values, flags, onChange, fieldErrors }: Props) {
   return (
     <SectionCard title="Staff Interview">
 
@@ -136,6 +139,7 @@ export default function StaffInterview({ values, flags, onChange }: Props) {
           onChange={(v) => onChange("months_at_site", v)}
           min={1}
           max={11}
+          error={fieldErrors?.months_at_site}
         />
       )}
 

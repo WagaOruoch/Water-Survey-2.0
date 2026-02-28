@@ -193,26 +193,26 @@ export default function ResponsesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900">Responses</h2>
-          <p className="mt-1 text-sm text-gray-600">All submitted responses</p>
+          <h2 className="text-3xl font-bold text-white">Responses</h2>
+          <p className="mt-1 text-sm text-blue-100/85">All submitted responses</p>
         </div>
         <Link
           href="/app/dashboard"
           data-btn="true"
-          className="rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
+          className="rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-blue-100 hover:bg-white/20"
         >
           Back to Dashboard
         </Link>
       </div>
 
-      <section className="rounded-lg bg-white p-6 shadow-sm">
+      <section className="rounded-lg border border-white/20 bg-slate-900/25 p-6 shadow-sm backdrop-blur-sm">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
+          <h3 className="text-lg font-semibold text-white">Filters</h3>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={resetFilters}
-              className="ui-btn-swap rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
+              className="ui-btn-swap rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-blue-100 hover:bg-white/20"
             >
               Reset
             </button>
@@ -220,7 +220,7 @@ export default function ResponsesPage() {
               type="button"
               onClick={handleExportCsv}
               disabled={exporting}
-              className="ui-btn-swap rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+              className="ui-btn-swap rounded-md border border-cyan-200/30 bg-cyan-500/30 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-500/45 disabled:opacity-60"
             >
               {exporting ? "Exporting..." : "Export CSV"}
             </button>
@@ -235,7 +235,7 @@ export default function ResponsesPage() {
               setSiteName(e.target.value);
             }}
             placeholder="Site name (e.g. kisumu)"
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-blue-50"
           />
 
           <select
@@ -244,7 +244,7 @@ export default function ResponsesPage() {
               setPage(1);
               setIsStaffed(e.target.value as "" | "yes" | "no");
             }}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="app-dark-select rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-blue-50"
           >
             <option value="">Staffed: all</option>
             <option value="yes">Staffed: yes</option>
@@ -257,7 +257,7 @@ export default function ResponsesPage() {
               setPage(1);
               setWaterSourceType(e.target.value);
             }}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="app-dark-select rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-blue-50"
           >
             <option value="">Water source: all</option>
             <option value="piped">Piped</option>
@@ -273,7 +273,7 @@ export default function ResponsesPage() {
               setPage(1);
               setPeriod(e.target.value as "" | "this_week" | "this_month");
             }}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="app-dark-select rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-blue-50"
           >
             <option value="">Period: all</option>
             <option value="this_week">This week</option>
@@ -286,7 +286,7 @@ export default function ResponsesPage() {
               setPage(1);
               setWaterIsTreated(e.target.value as "" | "yes" | "no");
             }}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="app-dark-select rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-blue-50"
           >
             <option value="">Treated: all</option>
             <option value="yes">Treated: yes</option>
@@ -299,7 +299,7 @@ export default function ResponsesPage() {
               setPage(1);
               setUsedForDrinking(e.target.value as "" | "yes" | "no");
             }}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="app-dark-select rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-blue-50"
           >
             <option value="">Drinking use: all</option>
             <option value="yes">Drinking use: yes</option>
@@ -313,7 +313,7 @@ export default function ResponsesPage() {
               setPage(1);
               setSubmittedAfter(e.target.value);
             }}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-blue-50"
           />
 
           <input
@@ -323,7 +323,7 @@ export default function ResponsesPage() {
               setPage(1);
               setSubmittedBefore(e.target.value);
             }}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-blue-50"
           />
 
           <select
@@ -340,7 +340,7 @@ export default function ResponsesPage() {
                   | "-site_name"
               );
             }}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="app-dark-select rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-blue-50"
           >
             <option value="-submitted_at">Sort: newest first</option>
             <option value="submitted_at">Sort: oldest first</option>
@@ -356,7 +356,7 @@ export default function ResponsesPage() {
               setPage(1);
               setPageSize(Number(e.target.value));
             }}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="app-dark-select rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-blue-50"
           >
             <option value={10}>10 per page</option>
             <option value={20}>20 per page</option>
@@ -366,29 +366,29 @@ export default function ResponsesPage() {
       </section>
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-lg border border-red-300/30 bg-red-500/15 px-4 py-3 text-sm text-red-100">
           {error}
         </div>
       )}
 
-      <section className="rounded-lg bg-white p-6 shadow-sm">
+      <section className="rounded-lg border border-white/20 bg-slate-900/25 p-6 shadow-sm backdrop-blur-sm">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
-            <thead className="bg-gray-50">
+            <thead className="bg-white/5">
               <tr>
-                <th className="border-b-2 border-gray-200 px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                <th className="border-b border-white/15 px-4 py-3 text-left text-sm font-semibold text-blue-100">
                   Site Code
                 </th>
-                <th className="border-b-2 border-gray-200 px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                <th className="border-b border-white/15 px-4 py-3 text-left text-sm font-semibold text-blue-100">
                   Location
                 </th>
-                <th className="border-b-2 border-gray-200 px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                <th className="border-b border-white/15 px-4 py-3 text-left text-sm font-semibold text-blue-100">
                   Submitted
                 </th>
-                <th className="border-b-2 border-gray-200 px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                <th className="border-b border-white/15 px-4 py-3 text-left text-sm font-semibold text-blue-100">
                   Staffed
                 </th>
-                <th className="border-b-2 border-gray-200 px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                <th className="border-b border-white/15 px-4 py-3 text-left text-sm font-semibold text-blue-100">
                   View
                 </th>
               </tr>
@@ -396,7 +396,7 @@ export default function ResponsesPage() {
             <tbody>
               {!loading && rows.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-6 text-center text-sm text-gray-500">
+                  <td colSpan={5} className="px-4 py-6 text-center text-sm text-blue-100/80">
                     No responses yet.
                   </td>
                 </tr>
@@ -414,37 +414,37 @@ export default function ResponsesPage() {
 
                 return (
                   <Fragment key={row.id}>
-                    <tr className={isFocused ? "bg-blue-50/60" : ""}>
-                      <td className="border-b border-gray-200 px-4 py-4 font-semibold text-gray-900">
+                    <tr className={isFocused ? "bg-cyan-500/10" : ""}>
+                      <td className="border-b border-white/10 px-4 py-4 font-semibold text-white">
                         {siteCode ?? "-"}
                       </td>
-                      <td className="border-b border-gray-200 px-4 py-4 text-gray-700">
+                      <td className="border-b border-white/10 px-4 py-4 text-blue-100/90">
                         {location || "-"}
                         {waterSourceTypeValue && (
-                          <div className="mt-1 text-xs text-gray-500">
+                          <div className="mt-1 text-xs text-blue-200/75">
                             {sourceLabels[waterSourceTypeValue] ?? waterSourceTypeValue}
                           </div>
                         )}
                       </td>
-                      <td className="border-b border-gray-200 px-4 py-4 text-gray-700">
+                      <td className="border-b border-white/10 px-4 py-4 text-blue-100/90">
                         {typeof row.submitted_at === "string" ? formatRelativeTime(row.submitted_at) : "-"}
                       </td>
-                      <td className="border-b border-gray-200 px-4 py-4">
+                      <td className="border-b border-white/10 px-4 py-4">
                         <span
                           className={`rounded-full px-3 py-1 text-xs font-semibold ${
                             staffed
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-amber-100 text-amber-800"
+                              ? "border border-emerald-200/40 bg-emerald-500/20 text-emerald-100"
+                              : "border border-amber-200/40 bg-amber-500/20 text-amber-100"
                           }`}
                         >
                           {staffed ? "Yes" : "No"}
                         </span>
                       </td>
-                      <td className="border-b border-gray-200 px-4 py-4">
+                      <td className="border-b border-white/10 px-4 py-4">
                         <button
                           type="button"
                           onClick={() => setExpandedId((prev) => (prev === row.id ? "" : row.id))}
-                          className="ui-btn-swap inline-block rounded bg-gray-100 px-3 py-1 text-sm text-gray-700 transition duration-150 hover:scale-105 hover:bg-blue-600 hover:text-white"
+                          className="ui-btn-swap inline-block rounded border border-cyan-200/30 bg-cyan-500/15 px-3 py-1 text-sm text-cyan-100 transition duration-150 hover:scale-105 hover:bg-cyan-500/40 hover:text-white"
                         >
                           {isExpanded ? "Hide" : "View"}
                         </button>
@@ -453,15 +453,15 @@ export default function ResponsesPage() {
 
                     {isExpanded && (
                       <tr>
-                        <td colSpan={5} className="border-b border-gray-200 bg-gray-50 px-4 py-4">
+                        <td colSpan={5} className="border-b border-white/10 bg-white/5 px-4 py-4">
                           <div className="overflow-x-auto">
                             <table className="w-full border-collapse">
                               <thead>
                                 <tr>
-                                  <th className="border-b border-gray-200 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                  <th className="border-b border-white/15 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-blue-200/85">
                                     Field
                                   </th>
-                                  <th className="border-b border-gray-200 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                  <th className="border-b border-white/15 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-blue-200/85">
                                     Value
                                   </th>
                                 </tr>
@@ -469,10 +469,10 @@ export default function ResponsesPage() {
                               <tbody>
                                 {detailEntries.map(([field, value]) => (
                                   <tr key={`${row.id}-${field}`}>
-                                    <td className="border-b border-gray-100 px-3 py-2 text-xs font-medium text-gray-700">
+                                    <td className="border-b border-white/10 px-3 py-2 text-xs font-medium text-blue-100/90">
                                       {field}
                                     </td>
-                                    <td className="border-b border-gray-100 px-3 py-2 text-xs text-gray-600">
+                                    <td className="border-b border-white/10 px-3 py-2 text-xs text-blue-100/80">
                                       {formatValue(value)}
                                     </td>
                                   </tr>
@@ -491,8 +491,8 @@ export default function ResponsesPage() {
         </div>
       </section>
 
-      <section className="flex items-center justify-between rounded-lg bg-white px-4 py-3 shadow-sm">
-        <p className="text-sm text-gray-600">
+      <section className="flex items-center justify-between rounded-lg border border-white/20 bg-slate-900/25 px-4 py-3 shadow-sm backdrop-blur-sm">
+        <p className="text-sm text-blue-100/85">
           Showing page {page} of {totalPages} ({total} total records)
         </p>
 
@@ -501,7 +501,7 @@ export default function ResponsesPage() {
             type="button"
             disabled={page <= 1}
             onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-            className="ui-btn-swap rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200 disabled:opacity-50"
+            className="ui-btn-swap rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-blue-100 hover:bg-white/20 disabled:opacity-50"
           >
             Previous
           </button>
@@ -510,7 +510,7 @@ export default function ResponsesPage() {
             type="button"
             disabled={page >= totalPages}
             onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-            className="ui-btn-swap rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200 disabled:opacity-50"
+            className="ui-btn-swap rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-blue-100 hover:bg-white/20 disabled:opacity-50"
           >
             Next
           </button>

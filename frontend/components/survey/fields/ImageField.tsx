@@ -38,8 +38,8 @@ export default function ImageField({
         <label
           htmlFor={`${id}-input`}
           className="inline-flex w-fit cursor-pointer items-center gap-2
-                     rounded-md bg-gray-100 px-4 py-2 text-sm font-medium
-                     text-gray-700 transition hover:bg-gray-200"
+                     rounded-md border border-white/20 bg-white/15 px-4 py-2 text-sm font-medium
+                     text-blue-50 transition hover:bg-white/20"
         >
           {value ? "Change Photo" : "Take / Upload Photo"}
           <input
@@ -53,7 +53,7 @@ export default function ImageField({
           />
         </label>
         {value && (
-          <p className="rounded-md bg-blue-50 px-3 py-1.5 text-xs text-blue-700">
+          <p className="rounded-md border border-cyan-200/30 bg-cyan-500/15 px-3 py-1.5 text-xs text-cyan-100">
             Photo captured
           </p>
         )}

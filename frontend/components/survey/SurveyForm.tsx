@@ -62,17 +62,41 @@ const DEPENDENT_CLEAR_MAP: Partial<Record<FieldId, FieldId[]>> = {
 
 type Status = "idle" | "loading" | "success" | "error" | "queued";
 
+type LiveFieldErrors = {
+  site_code?: string;
+  months_at_site?: string;
+};
+
 export default function SurveyForm() {
   const [values, setValues]           = useState<FormValues>({});
   const [status, setStatus]           = useState<Status>("idle");
   const [submissionId, setSubmissionId] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [liveFieldErrors, setLiveFieldErrors] = useState<LiveFieldErrors>({});
   const [queuedCount, setQueuedCount] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
   const syncInProgressRef = useRef(false);
 
   const flags = useMemo(() => computeFlags(values), [values]);
+
+  function getLiveFieldError(fieldId: "site_code" | "months_at_site", value: FieldValue): string {
+    if (value === null || value === undefined || value === "") return "";
+    if (typeof value !== "number") return "";
+
+    if (fieldId === "site_code") {
+      if (value < 100000 || value > 999999) {
+        return "Site code must be a 6 digit number.";
+      }
+      return "";
+    }
+
+    if (value < 1 || value > 11) {
+      return "Months at site must be between 1 and 11.";
+    }
+
+    return "";
+  }
 
   function isNetworkSubmissionError(error: unknown): boolean {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -156,6 +180,14 @@ export default function SurveyForm() {
 
       return clearHiddenFields(nextValues);
     });
+
+    if (fieldId === "site_code" || fieldId === "months_at_site") {
+      const nextError = getLiveFieldError(fieldId, value);
+      setLiveFieldErrors((prev) => ({
+        ...prev,
+        [fieldId]: nextError || undefined,
+      }));
+    }
   }
 
   // ── Validation ───────────────────────────────────────────
@@ -187,6 +219,16 @@ export default function SurveyForm() {
           errors.push(`"${label}" is required.`);
         }
       }
+    }
+
+    const siteCode = values.site_code;
+    if (typeof siteCode === "number" && (siteCode < 100000 || siteCode > 999999)) {
+      errors.push('"Site code" must be a 6 digit number.');
+    }
+
+    const monthsAtSite = values.months_at_site;
+    if (typeof monthsAtSite === "number" && (monthsAtSite < 1 || monthsAtSite > 11)) {
+      errors.push('"How many months have you worked here?" must be between 1 and 11.');
     }
 
     return errors;
@@ -254,6 +296,7 @@ export default function SurveyForm() {
     setSubmissionId("");
     setErrorMessage("");
     setValidationErrors([]);
+    setLiveFieldErrors({});
   }
 
   if (status === "queued") {
@@ -314,10 +357,24 @@ export default function SurveyForm() {
           </div>
         )}
 
-        <Background values={values} flags={flags} onChange={handleChange} />
+        <Background
+          values={values}
+          flags={flags}
+          onChange={handleChange}
+          fieldErrors={{
+            site_code: liveFieldErrors.site_code,
+          }}
+        />
 
         {isSectionVisible("staff_interview", flags) && (
-          <StaffInterview values={values} flags={flags} onChange={handleChange} />
+          <StaffInterview
+            values={values}
+            flags={flags}
+            onChange={handleChange}
+            fieldErrors={{
+              months_at_site: liveFieldErrors.months_at_site,
+            }}
+          />
         )}
 
         {isSectionVisible("site_observation", flags) && (

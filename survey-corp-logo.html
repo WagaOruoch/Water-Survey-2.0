@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Corp - Logo Showcase</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            padding: 3rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-bottom: 3rem;
+        }
+
+        .logo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .logo-showcase {
+            background: white;
+            border-radius: 16px;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo-showcase.dark {
+            background: #0f172a;
+        }
+
+        .logo-showcase.colored {
+            background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%);
+        }
+
+        .showcase-label {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+        }
+
+        .logo-showcase.dark .showcase-label {
+            color: #94a3b8;
+        }
+
+        .logo-showcase.colored .showcase-label {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Logo Components */
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            position: relative;
+        }
+
+        .logo-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        /* Icon Styles */
+        .icon-geometric {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .shape {
+            position: absolute;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .shape-1 {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            border-radius: 6px;
+            top: 0;
+            left: 0;
+            transform: rotate(45deg);
+            animation-delay: 0s;
+        }
+
+        .shape-2 {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%;
+            bottom: 0;
+            right: 0;
+            animation-delay: 0.5s;
+        }
+
+        .shape-3 {
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            border-radius: 3px;
+            top: 8px;
+            right: 2px;
+            animation-delay: 1s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(45deg);
+            }
+            50% {
+                transform: translateY(-4px) rotate(45deg);
+            }
+        }
+
+        /* Color variations */
+        .logo-light .logo-text {
+            color: #0f172a;
+        }
+
+        .logo-dark .logo-text {
+            color: white;
+        }
+
+        .logo-colored .logo-text {
+            color: white;
+        }
+
+        /* Additional logo sizes */
+        .logo-small .logo-icon {
+            width: 32px;
+            height: 32px;
+        }
+
+        .logo-small .logo-text {
+            font-size: 1.5rem;
+        }
+
+        .logo-small .shape-1 {
+            width: 18px;
+            height: 18px;
+        }
+
+        .logo-small .shape-2 {
+            width: 13px;
+            height: 13px;
+        }
+
+        .logo-small .shape-3 {
+            width: 10px;
+            height: 10px;
+            top: 5px;
+        }
+
+        .logo-large .logo-icon {
+            width: 64px;
+            height: 64px;
+        }
+
+        .logo-large .logo-text {
+            font-size: 2.5rem;
+        }
+
+        .logo-large .shape-1 {
+            width: 36px;
+            height: 36px;
+        }
+
+        .logo-large .shape-2 {
+            width: 26px;
+            height: 26px;
+        }
+
+        .logo-large .shape-3 {
+            width: 20px;
+            height: 20px;
+            top: 12px;
+        }
+
+        /* Download Section */
+        .download-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-top: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .download-section h2 {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .download-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .download-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .download-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .download-card-title {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        .download-card-desc {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        /* Usage Guide */
+        .usage-guide {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .usage-guide h3 {
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .usage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .usage-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid #10b981;
+        }
+
+        .usage-item h4 {
+            margin-bottom: 0.75rem;
+            color: #10b981;
+            font-size: 1rem;
+        }
+
+        .usage-item code {
+            display: block;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            overflow-x: auto;
+            margin-top: 0.5rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Icon Only Versions */
+        .icon-only-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .icon-only-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .icon-only-card.dark {
+            background: #0f172a;
+        }
+
+        .icon-size-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 1.5rem;
+            }
+
+            .logo-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Survey Corp</h1>
+        <p class="subtitle">Modern Logo System • Blue + Green • Geometric Abstract</p>
+
+        <!-- Main Logo Variations -->
+        <div class="logo-grid">
+            <!-- Light Background -->
+            <div class="logo-showcase">
+                <div class="logo logo-light">
+                    <div class="logo-icon">
+                        <div class="icon-geometric">
+                            <div class="shape shape-1"></div>
+                            <div class="shape shape-2"></div>
+                            <div class="shape shape-3"></div>
+                        </div>
+                    </div>
+                    <div class="logo-text">Survey Corp</div>
+                </div>
+                <div class="showcase-label">On Light Background</div>
+            </div>
+
+            <!-- Dark Background -->
+            <div class="logo-showcase dark">
+                <div class="logo logo-dark">
+                    <div class="logo-icon">
+                        <div class="icon-geometric">
+                            <div class="shape shape-1"></div>
+                            <div class="shape shape-2"></div>
+                            <div class="shape shape-3"></div>
+                        </div>
+                    </div>
+                    <div class="logo-text">Survey Corp</div>
+                </div>
+                <div class="showcase-label">On Dark Background</div>
+            </div>
+
+            <!-- Colored Background -->
+            <div class="logo-showcase colored">
+                <div class="logo logo-colored">
+                    <div class="logo-icon">
+                        <div class="icon-geometric">
+                            <div class="shape shape-1"></div>
+                            <div class="shape shape-2"></div>
+                            <div class="shape shape-3"></div>
+                        </div>
+                    </div>
+                    <div class="logo-text">Survey Corp</div>
+                </div>
+                <div class="showcase-label">On Colored Background</div>
+            </div>
+        </div>
+
+        <!-- Size Variations -->
+        <h2 style="margin-bottom: 2rem; font-size: 1.75rem;">Size Variations</h2>
+        <div class="logo-grid">
+            <!-- Small -->
+            <div class="logo-showcase">
+                <div class="logo logo-light logo-small">
+                    <div class="logo-icon">
+                        <div class="icon-geometric">
+                            <div class="shape shape-1"></div>
+                            <div class="shape shape-2"></div>
+                            <div class="shape shape-3"></div>
+                        </div>
+                    </div>
+                    <div class="logo-text">Survey Corp</div>
+                </div>
+                <div class="showcase-label">Small (Header, Mobile)</div>
+            </div>
+
+            <!-- Large -->
+            <div class="logo-showcase">
+                <div class="logo logo-light logo-large">
+                    <div class="logo-icon">
+                        <div class="icon-geometric">
+                            <div class="shape shape-1"></div>
+                            <div class="shape shape-2"></div>
+                            <div class="shape shape-3"></div>
+                        </div>
+                    </div>
+                    <div class="logo-text">Survey Corp</div>
+                </div>
+                <div class="showcase-label">Large (Hero, Landing)</div>
+            </div>
+        </div>
+
+        <!-- Icon Only Versions -->
+        <h2 style="margin: 3rem 0 1rem; font-size: 1.75rem;">Icon Only (App Icon, Favicon)</h2>
+        <div class="icon-only-grid">
+            <div class="icon-only-card">
+                <div class="logo-icon" style="width: 64px; height: 64px;">
+                    <div class="icon-geometric">
+                        <div class="shape shape-1" style="width: 36px; height: 36px;"></div>
+                        <div class="shape shape-2" style="width: 26px; height: 26px;"></div>
+                        <div class="shape shape-3" style="width: 20px; height: 20px; top: 12px;"></div>
+                    </div>
+                </div>
+                <div class="icon-size-label">64x64px</div>
+            </div>
+
+            <div class="icon-only-card dark">
+                <div class="logo-icon" style="width: 48px; height: 48px;">
+                    <div class="icon-geometric">
+                        <div class="shape shape-1" style="width: 28px; height: 28px;"></div>
+                        <div class="shape shape-2" style="width: 20px; height: 20px;"></div>
+                        <div class="shape shape-3" style="width: 16px; height: 16px;"></div>
+                    </div>
+                </div>
+                <div class="icon-size-label" style="color: #94a3b8;">48x48px</div>
+            </div>
+
+            <div class="icon-only-card">
+                <div class="logo-icon" style="width: 32px; height: 32px;">
+                    <div class="icon-geometric">
+                        <div class="shape shape-1" style="width: 18px; height: 18px;"></div>
+                        <div class="shape shape-2" style="width: 13px; height: 13px;"></div>
+                        <div class="shape shape-3" style="width: 10px; height: 10px; top: 5px;"></div>
+                    </div>
+                </div>
+                <div class="icon-size-label">32x32px</div>
+            </div>
+
+            <div class="icon-only-card dark">
+                <div class="logo-icon" style="width: 16px; height: 16px;">
+                    <div class="icon-geometric">
+                        <div class="shape shape-1" style="width: 10px; height: 10px; border-radius: 2px;"></div>
+                        <div class="shape shape-2" style="width: 7px; height: 7px;"></div>
+                        <div class="shape shape-3" style="width: 5px; height: 5px; top: 2px; border-radius: 1px;"></div>
+                    </div>
+                </div>
+                <div class="icon-size-label" style="color: #94a3b8;">16x16px (Favicon)</div>
+            </div>
+        </div>
+
+        <!-- Usage Guide -->
+        <div class="usage-guide">
+            <h3>📋 Usage Guidelines</h3>
+            <div class="usage-grid">
+                <div class="usage-item">
+                    <h4>Logo Concept</h4>
+                    <p style="color: #cbd5e1; line-height: 1.6;">
+                        Abstract geometric shapes represent data points and survey responses coming together. 
+                        The blue (data/trust) and green (growth/action) create dynamic energy while maintaining 
+                        professional credibility.
+                    </p>
+                </div>
+                <div class="usage-item">
+                    <h4>Clear Space</h4>
+                    <p style="color: #cbd5e1; line-height: 1.6;">
+                        Maintain minimum clear space equal to the height of one shape around the logo. 
+                        Never place other elements too close to the logo.
+                    </p>
+                </div>
+                <div class="usage-item">
+                    <h4>Minimum Size</h4>
+                    <p style="color: #cbd5e1; line-height: 1.6;">
+                        • Full logo: 120px width minimum<br>
+                        • Icon only: 16px minimum<br>
+                        • Below these sizes, use icon only
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- HTML/CSS Code -->
+        <div class="download-section">
+            <h2>💻 Implementation Code</h2>
+            <div class="usage-grid" style="margin-top: 1rem;">
+                <div class="usage-item" style="border-left-color: #0ea5e9; grid-column: span 2;">
+                    <h4>HTML + CSS (Recommended for Web)</h4>
+                    <code>&lt;!-- Add to your header --&gt;
+&lt;div class="logo"&gt;
+  &lt;div class="logo-icon"&gt;
+    &lt;div class="icon-geometric"&gt;
+      &lt;div class="shape shape-1"&gt;&lt;/div&gt;
+      &lt;div class="shape shape-2"&gt;&lt;/div&gt;
+      &lt;div class="shape shape-3"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="logo-text"&gt;Survey Corp&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Copy all CSS from this page's &lt;style&gt; tag --&gt;</code>
+                </div>
+
+                <div class="usage-item" style="border-left-color: #10b981;">
+                    <h4>Colors Used</h4>
+                    <code>Blue: #0ea5e9 → #0284c7
+Green: #10b981 → #059669
+Cyan: #06b6d4 → #0891b2
+Text Dark: #0f172a
+Text Light: #ffffff</code>
+                </div>
+
+                <div class="usage-item" style="border-left-color: #10b981;">
+                    <h4>Fonts</h4>
+                    <code>Icon: Geometric shapes (CSS)
+Text: Space Grotesk (Bold/700)
+
+Google Fonts:
+@import url('googleapis.com/
+css2?family=Space+Grotesk:
+wght@700');</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Instructions -->
+        <div class="download-section" style="margin-top: 2rem;">
+            <h2>📥 How to Export</h2>
+            <p style="color: #cbd5e1; margin-bottom: 1rem;">
+                This logo is built with HTML/CSS and can be used directly in your website. For other formats:
+            </p>
+            <div class="download-grid">
+                <div class="download-card">
+                    <div class="download-card-title">Take Screenshot</div>
+                    <div class="download-card-desc">Use browser screenshot tool for PNG</div>
+                </div>
+                <div class="download-card">
+                    <div class="download-card-title">Use in React/Next.js</div>
+                    <div class="download-card-desc">Copy component code directly</div>
+                </div>
+                <div class="download-card">
+                    <div class="download-card-title">SVG Export</div>
+                    <div class="download-card-desc">Use Figma/Illustrator to recreate as SVG</div>
+                </div>
+                <div class="download-card">
+                    <div class="download-card-title">Favicon</div>
+                    <div class="download-card-desc">Screenshot 16x16 icon version</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add click to copy functionality
+        document.querySelectorAll('.download-card').forEach(card => {
+            card.addEventListener('click', () => {
+                alert('Right-click on logo variations above and "Save Image As..." or take a screenshot!');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -35,9 +35,9 @@ export default function SelectMultiple({
           <label
             key={opt.value}
             className="flex cursor-pointer items-center gap-2 rounded-md border
-                       border-gray-200 px-3 py-2 text-sm transition
-                       hover:bg-blue-50 has-[:checked]:border-blue-500
-                       has-[:checked]:bg-blue-50"
+                       border-white/20 bg-white/5 px-3 py-2 text-sm text-blue-50 transition
+                       hover:bg-white/10 has-[:checked]:border-cyan-300
+                       has-[:checked]:bg-cyan-500/20"
           >
             <input
               type="checkbox"

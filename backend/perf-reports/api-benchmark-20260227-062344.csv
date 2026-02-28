@@ -1,0 +1,6 @@
+endpoint,avg_ms,p95_ms,median_ms,min_ms,max_ms,statuses,errors,avg_response_header_ms,avg_db_queries,avg_db_ms
+/api/dashboard/summary/,39.01,39.01,39.01,39.01,39.01,200,0,28.19,7.0,10.00
+/api/analytics/summary/,27.01,27.01,27.01,27.01,27.01,200,0,26.07,12.0,13.00
+/api/dashboard/recent/,7.75,7.75,7.75,7.75,7.75,200,0,6.91,2.0,2.00
+/api/responses/?page=1&page_size=20,5.72,5.72,5.72,5.72,5.72,200,0,4.97,3.0,2.00
+/api/responses/export/csv/,4.73,4.73,4.73,4.73,4.73,200,0,3.96,2.0,1.00

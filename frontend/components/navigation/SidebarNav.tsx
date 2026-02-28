@@ -14,7 +14,7 @@ export default function SidebarNav() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-60 bg-white py-6 shadow-[2px_0_4px_rgba(0,0,0,0.05)]">
+    <aside className="w-60 border-r border-white/10 bg-slate-900/30 py-6 backdrop-blur-sm">
       <nav className="flex flex-col">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
@@ -24,8 +24,8 @@ export default function SidebarNav() {
               href={item.href}
               className={`border-l-[3px] px-6 py-3 text-sm transition ${
                 isActive
-                  ? "border-blue-600 bg-blue-50 font-semibold text-blue-600"
-                  : "border-transparent text-gray-600 hover:bg-gray-50 hover:text-blue-600"
+                  ? "border-cyan-300 bg-cyan-400/15 font-semibold text-cyan-100"
+                  : "border-transparent text-blue-100/85 hover:bg-white/5 hover:text-white"
               }`}
             >
               {item.label}

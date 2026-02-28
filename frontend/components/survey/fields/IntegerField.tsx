@@ -7,6 +7,7 @@ interface IntegerFieldProps {
   onChange: (value: number | null) => void;
   min?: number;
   max?: number;
+  error?: string;
   required?: boolean;
 }
 
@@ -17,6 +18,7 @@ export default function IntegerField({
   onChange,
   min,
   max,
+  error,
   required,
 }: IntegerFieldProps) {
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -41,10 +43,11 @@ export default function IntegerField({
         min={min}
         max={max}
         step={1}
-        className="w-40 rounded-md border border-gray-300 px-3 py-2 text-sm
-                   shadow-sm outline-none transition
-                   focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+        className="w-40 rounded-md border border-white/20 bg-white/15 px-3 py-2 text-sm
+                   text-blue-50 shadow-sm outline-none transition
+                   focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/30"
       />
+      {error && <p className="text-xs text-red-200">{error}</p>}
     </FieldWrapper>
   );
 }

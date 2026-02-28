@@ -6,6 +6,9 @@ interface Props {
   values: FormValues;
   flags: ComputedFlags;
   onChange: (fieldId: FieldId, value: FieldValue) => void;
+  fieldErrors?: {
+    site_code?: string;
+  };
 }
 
 const SITE_OPTIONS = [
@@ -18,7 +21,7 @@ const YES_NO = [
   { value: "no",  label: "b. No"  },
 ];
 
-export default function Background({ values, onChange }: Props) {
+export default function Background({ values, onChange, fieldErrors }: Props) {
   return (
     <SectionCard title="Background">
 
@@ -29,6 +32,7 @@ export default function Background({ values, onChange }: Props) {
         onChange={(v) => onChange("site_code", v)}
         min={100000}
         max={999999}
+        error={fieldErrors?.site_code}
         required
       />
 

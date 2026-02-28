@@ -1,12 +1,23 @@
 import Link from "next/link";
+import SurveyCorpMark from "@/components/branding/SurveyCorpMark";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="flex min-h-16 items-center justify-between bg-blue-600 px-6 text-white shadow-sm sm:px-8">
+    <div className="relative min-h-screen overflow-hidden">
+      <div
+        className="pointer-events-none absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: "url('/images/New landing page.png')" }}
+      />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-slate-950/80 via-blue-950/70 to-blue-900/50" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/45 via-transparent to-slate-900/15" />
+
+      <nav className="relative z-10 flex min-h-16 items-center justify-between bg-transparent px-6 text-white sm:px-8">
         <div>
-          <h1 className="text-xl font-semibold">Survey Corp</h1>
-          <p className="text-xs text-blue-100">Survey Operations Platform</p>
+          <div className="flex items-center gap-2.5">
+            <SurveyCorpMark size="sm" />
+            <h1 className="text-4 font-semibold leading-none text-white sm:text-xl">Survey Corp</h1>
+          </div>
+          <p className="mt-1 text-xs text-blue-100/95">Survey Operations Platform</p>
         </div>
         <Link
           href="/login"
@@ -16,14 +27,8 @@ export default function Home() {
         </Link>
       </nav>
 
-      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10 lg:gap-8 lg:px-8">
-        <section className="relative overflow-hidden rounded-2xl border border-blue-100 text-white shadow-sm">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: "url('/images/survey-landing-page.png')" }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-blue-950/70 to-blue-900/50" />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/45 via-transparent to-slate-900/15" />
+      <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10 lg:gap-8 lg:px-8">
+        <section className="relative overflow-hidden rounded-2xl border border-white/20 bg-white/5 text-white shadow-sm backdrop-blur-[1px]">
 
           <div className="pointer-events-none absolute inset-0 opacity-45">
             <div className="hero-orb hero-orb-a" />
@@ -126,7 +131,7 @@ export default function Home() {
           ].map(([title, description]) => (
             <article
               key={title}
-              className="analytics-card-link rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
+              className="rounded-xl border border-white/30 bg-slate-100/90 p-5 shadow-[0_8px_24px_-16px_rgba(15,23,42,0.5)] backdrop-blur-[1px] transition-transform duration-200 hover:-translate-y-0.5 hover:border-white/40 hover:shadow-[0_12px_30px_-16px_rgba(15,23,42,0.55)]"
             >
               <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
               <p className="mt-2 text-sm leading-6 text-gray-600">{description}</p>
@@ -134,7 +139,7 @@ export default function Home() {
           ))}
         </section>
 
-        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+        <section className="rounded-2xl border border-white/30 bg-slate-100/90 p-6 shadow-[0_10px_28px_-18px_rgba(15,23,42,0.55)] backdrop-blur-[1px] sm:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h3 className="text-2xl font-bold text-gray-900">Ready to build your survey operation hub?</h3>

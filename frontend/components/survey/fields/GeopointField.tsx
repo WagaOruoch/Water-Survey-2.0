@@ -50,20 +50,20 @@ export default function GeopointField({
             type="button"
             onClick={capture}
             disabled={loading}
-            className="rounded-md bg-gray-100 px-4 py-2 text-sm font-medium
-                       text-gray-700 transition hover:bg-gray-200
+            className="rounded-md border border-white/20 bg-white/15 px-4 py-2 text-sm font-medium
+                       text-blue-50 transition hover:bg-white/20
                        disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Getting location…" : "Get Current Location"}
           </button>
         </div>
         {value && (
-          <p className="rounded-md bg-green-50 px-3 py-1.5 font-mono text-xs text-green-700">
+          <p className="rounded-md border border-emerald-200/30 bg-emerald-500/15 px-3 py-1.5 font-mono text-xs text-emerald-100">
             {value}
           </p>
         )}
         {error && (
-          <p className="text-xs text-red-600">{error}</p>
+          <p className="text-xs text-red-200">{error}</p>
         )}
       </div>
     </FieldWrapper>

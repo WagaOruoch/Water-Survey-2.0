@@ -13,7 +13,7 @@ export default function FieldWrapper({
 }: FieldWrapperProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-medium text-gray-700">
+      <label htmlFor={id} className="text-sm font-medium text-blue-50/95">
         {label}
         {required && <span className="ml-1 text-red-500">*</span>}
       </label>

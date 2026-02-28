@@ -112,3 +112,28 @@ body {
   background: rgba(59, 130, 246, 0.25);
   animation-delay: 0.9s;
 }
+
+select.app-dark-select,
+select.app-dark-select option,
+select.app-dark-select optgroup {
+  background-color: #334155;
+  color: #e2e8f0;
+}
+
+input[type="date"] {
+  color-scheme: dark;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: brightness(0) invert(1) opacity(0.95);
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: #e2e8f0;
+  box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.07) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}

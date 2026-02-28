@@ -1,0 +1,87 @@
+{
+  "meta": {
+    "user": "admin@example.com",
+    "preset": "smoke",
+    "runs": 10,
+    "warmup": 2,
+    "endpoint_count": 5,
+    "generated_at": "2026-02-27T05:21:24.136650+00:00"
+  },
+  "results": [
+    {
+      "endpoint": "/api/analytics/summary/",
+      "avg_ms": 31.365870003355667,
+      "med_ms": 31.52685000532074,
+      "p95_ms": 36.784950007859145,
+      "min_ms": 25.047700008144602,
+      "max_ms": 40.289100012159906,
+      "statuses": [
+        200
+      ],
+      "errors": 0,
+      "avg_header_ms": 29.833,
+      "avg_db_queries": 6.0,
+      "avg_db_ms": 8.0
+    },
+    {
+      "endpoint": "/api/dashboard/summary/",
+      "avg_ms": 18.828659996506758,
+      "med_ms": 18.88100000360282,
+      "p95_ms": 22.20946499655838,
+      "min_ms": 15.765599993756041,
+      "max_ms": 22.659599999315105,
+      "statuses": [
+        200
+      ],
+      "errors": 0,
+      "avg_header_ms": 17.45,
+      "avg_db_queries": 4.0,
+      "avg_db_ms": 4.7
+    },
+    {
+      "endpoint": "/api/responses/?page=1&page_size=20",
+      "avg_ms": 10.848559999431018,
+      "med_ms": 10.92380000045523,
+      "p95_ms": 12.509945002238965,
+      "min_ms": 8.067499991739169,
+      "max_ms": 12.550400002510287,
+      "statuses": [
+        200
+      ],
+      "errors": 0,
+      "avg_header_ms": 9.385,
+      "avg_db_queries": 3.0,
+      "avg_db_ms": 3.5
+    },
+    {
+      "endpoint": "/api/dashboard/recent/",
+      "avg_ms": 9.838059998583049,
+      "med_ms": 10.355149999668356,
+      "p95_ms": 12.055030003830325,
+      "min_ms": 7.117300003301352,
+      "max_ms": 12.324399998760782,
+      "statuses": [
+        200
+      ],
+      "errors": 0,
+      "avg_header_ms": 8.416,
+      "avg_db_queries": 2.0,
+      "avg_db_ms": 3.1
+    },
+    {
+      "endpoint": "/api/responses/export/csv/",
+      "avg_ms": 6.690809999417979,
+      "med_ms": 6.715700001223013,
+      "p95_ms": 9.130079999158625,
+      "min_ms": 4.902700005914085,
+      "max_ms": 9.327899999334477,
+      "statuses": [
+        200
+      ],
+      "errors": 0,
+      "avg_header_ms": 5.613,
+      "avg_db_queries": 2.0,
+      "avg_db_ms": 2.3
+    }
+  ]
+}
